@@ -7,7 +7,7 @@ gff<-read.table('4c_anno_gencodeOverlap.gtf',sep='\t',header=F)
 #colnames(gff)<-c('Seqname',	'Source',	'Feature',	'Start',	'End',	'Score',	'Strand',	'Frame',	'Group')
 
 
-#detect duplicates combining 'Seqname',	'Start',	'End',	'Strand' 
+#detect duplicates combining 'Seqname','Start','End','Strand' 
 duplicates<-duplicated(gff[,c(1,4,5,7)])
 
 #remove duplicates  
