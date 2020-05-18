@@ -1,2 +1,2 @@
-# Annotated-genome-mm10
-###Extract Exon/protein coding/non-coding genomic ranges for better mapping read-counts
+# Transcription Units annotation application
+###R shiny application for TU calling and annotation with bam inputs. 
