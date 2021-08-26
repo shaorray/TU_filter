@@ -7,13 +7,13 @@
 ### part3 normalise TU expression, and cutoff low expressed ncRNAs
 
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(shiny,shinyjs,shinydashboard,bsplus,shinythemes,shinyFiles,
+pacman::p_load(shiny, shinyjs, shinydashboard, bsplus, shinythemes, shinyFiles,
                dplyr, S4Vectors,
                Rsamtools, rtracklayer,
                IRanges,GenomicRanges, GenomeInfoDb, GenomicAlignments,
                STAN,
-               foreach,doParallel,
-               ggplot2,RColorBrewer)
+               foreach, doParallel,
+               ggplot2, RColorBrewer)
 
 #setting----------------------------------------------------------------------
 
@@ -106,7 +106,8 @@ ui <- dashboardPage(skin = "black",
                                       verbatimTextOutput('filepaths10'),br(),
                                       collapsible = T, collapsed = FALSE
                                   ),
-                                  box(title = 'Location counts',plotOutput("counts_plot"),collapsible = T,width = 8, collapsed = F,
+                                  box(title = 'Location counts', plotOutput("counts_plot"),collapsible = T,
+                                      width = 8, collapsed = F,
                                       background = "teal", solidHeader = TRUE #status = "warning",solidHeader = TRUE
                                   )
                                 )
@@ -139,7 +140,8 @@ ui <- dashboardPage(skin = "black",
                                                    min = 1,
                                                    max = 3000,
                                                    value = 1000),
-                                      numericInput(inputId = "binning.size", label = "Bin size", value = 200, min = 50, max = 2000,step = 100,width = "60%")
+                                      numericInput(inputId = "binning.size", label = "Bin size", value = 200,
+                                                   min = 50, max = 2000,step = 100,width = "60%")
                                   ),
                                   
                                   box(title = 'Annotation tuning', status = "warning",solidHeader = TRUE,
@@ -147,26 +149,40 @@ ui <- dashboardPage(skin = "black",
                                       fileInput("unmappable", HTML(paste('Join TU gaps' )),
                                                 multiple = FALSE,
                                                 accept = c("text/csv",".bed",".gtf"), placeholder = 'BED'
-                                      )%>%
+                                      ) %>%
                                         shinyInput_label_embed(
                                           icon("question-circle") %>%
                                             bs_embed_tooltip(title = "Unmappable_regions")
                                         ),
+                                      
                                       checkboxInput("precBound", "Precise Boundary", value = FALSE, width = NULL)%>%
                                         shinyInput_label_embed(
                                           icon("question-circle") %>%
-                                            bs_embed_tooltip(title = "Refine non-coding TU boundary by coverage abrupt changes. Slow warning.")
+                                            bs_embed_tooltip(title = "Refine non-coding TU boundary by coverage
+                                                             abrupt changes. Slow warning.")
                                         ),
+                                      
+                                      checkboxInput("jaccardCutoff", "Filter Common TUs", value = FALSE, width = NULL) %>%
+                                        shinyInput_label_embed(
+                                          icon("question-circle") %>%
+                                            bs_embed_tooltip(title = "Cutoff expression below the threshold which 
+                                            keeps the max jaccard similarity among all samples when lower expressed
+                                                             TUs are removed.")
+                                        ),
+                                      
                                       collapsible = T, collapsed = FALSE
                                   ),
                                   
                                   box(title='TU and Gene Cutoff', status = "warning",solidHeader = TRUE,
-                                      checkboxGroupInput('merging_TU', label = 'Merge TU from genes ',choices = c('Minimum TU overlap'='TU','Minimum gene overlap'='Gene')),
+                                      checkboxGroupInput('merging_TU', label = 'Merge TU from genes ',
+                                                         choices = c('Minimum TU overlap'='TU',
+                                                                     'Minimum gene overlap'='Gene')),
                                       uiOutput(outputId = "overlap_cutoff_"),
                                       uiOutput(outputId = "jaccard_cutoff_"),
                                       useShinyjs(),
-                                      fileInput(inputId = "mask_list", label = "Upload a mask list",placeholder = 'gene_id to remove'
-                                      )%>%
+                                      fileInput(inputId = "mask_list", label = "Upload a mask list",
+                                                placeholder = 'gene_id to remove'
+                                      ) %>%
                                         shinyInput_label_embed(
                                           icon("question-circle") %>%
                                             bs_embed_tooltip(title = "Extremely long genes")
@@ -233,7 +249,8 @@ ui <- dashboardPage(skin = "black",
                         tabItem(tabName = "stats",
                                 fluidRow(
                                   # box(title = 'Prediction',
-                                  #     fileInput(inputId = 'targets',label = 'Target RNAs',multiple = F,accept = c(".bed",".gtf"), placeholder = 'e.g. active eRNA' ),
+                                  #     fileInput(inputId = 'targets',label = 'Target RNAs',multiple = F,
+                                  #     accept = c(".bed",".gtf"), placeholder = 'e.g. active eRNA' ),
                                   #     shinyDirButton("feature_folder", "Choose features" ,
                                   #                    title = "Please select a folder:",
                                   #                    buttonType = "default", class = NULL),
@@ -241,35 +258,45 @@ ui <- dashboardPage(skin = "black",
                                   #     textOutput("txt_file"),
                                   #     status = "primary",solidHeader = TRUE,collapsible = T, collapsed = FALSE),
                                   
-                                  box(title = 'Plot',uiOutput('buttonsUI3'), status = "primary",solidHeader = TRUE,collapsible = T, collapsed = FALSE),
+                                  box(title = 'Plot',uiOutput('buttonsUI3'), status = "primary",solidHeader = TRUE,
+                                      collapsible = T, collapsed = FALSE),
                                   
-                                  box(title='Download', uiOutput('downloadUI'),status = "primary",solidHeader = TRUE,collapsible = T, collapsed = FALSE),
+                                  box(title='Download', uiOutput('downloadUI'),status = "primary",solidHeader = TRUE,
+                                      collapsible = T, collapsed = FALSE),
                                   
-                                  box(title = "Number per class", tableOutput("table_output"),status = "primary",solidHeader = TRUE,collapsible = T, collapsed = FALSE)
+                                  box(title = "Number per class", tableOutput("table_output"),status = "primary",
+                                      solidHeader = TRUE,collapsible = T, collapsed = FALSE)
                                 )
                         ),
                         tabItem(tabName = "help",
                                 fluidRow(
                                   box(title = "File requirments",status = "success",#solidHeader = TRUE,
-                                      p('This app originates from annotatation steps of TT-seq, combines TU (transcription unit) calling and ncRNA location assignment.'),
-                                      a(href="http://science.sciencemag.org/content/352/6290/1225.long",h5("TTseq paper")),
-                                      p('Input bam files follows binning genome, active states by GenoSTAN and merge intervals with gene references.'),
-                                      p('Step 1: binning genome, count reads, generate TU ranges'),
-                                      p('Step 2: merge tu upon indicated features and annotate non-coding TU locations'),
-                                      p('Step 3: normalise TU expression, cutoff low expressed ncRNAs'),
+                                      p('This app organizes the annotatation steps of TT-seq paper, combines TU 
+                                        (transcription unit) calling and ncRNA location assignment for auto-annotation and parallelization.'),
+                                      a(href="http://science.sciencemag.org/content/352/6290/1225.long",
+                                        h5("TTseq paper")),
+                                      p('Input bam files will be subject to binning genome, calling the active state by GenoSTAN HMM, and
+                                        merging intervals upon the provided references and features.'),
+                                      p('Step 1: bin genome, count reads, call TU ranges'),
+                                      p('Step 2: merge scatter TUs upon indicated features, and assign non-coding TU locations'),
+                                      p('Step 3: normalise TU expression if multiple samples are inputs, and cutoff lowly expressed ncRNAs'),
                                       br(),
                                       
                                       img(src='flow.png',  width = 500),br(),
-                                      a(href="www.bioconductor.org/packages/release/bioc/html/STAN.html",h5("Bioconductor: STAN")),
+                                      a(href="www.bioconductor.org/packages/release/bioc/html/STAN.html",
+                                        h5("Bioconductor: STAN")),
                                       br(),
                                       
-                                      p('Bam files: paired-end and strand specific. First / second read in pair on the forward strand will be corrected.'),
+                                      p("Requirements:"),
+                                      p('Bam files: paired-end and strand specific. First / second read in pair will be auto-corrected
+                                        to match the forward strand.'),
                                       
                                       br(),
-                                      p('Transcripts file: a BED / GTF file provide, e.g. HOMER'),
+                                      p('Transcripts file: a list of BED / GTF intervals to be annotated, e.g. peaks from HOMER'),
                                       
                                       br(),
-                                      p("Gene reference file: with 'gene' and 'exon' features, and 'protein_coding' gene_type. e.g. GENCODE and ensembl. "),
+                                      p("Gene reference: each gene reference has the 'gene' and 'exon' features, and 'protein_coding'
+                                        gene_type, e.g. GENCODE and ensembl. "),
                                       br(),
                                       img(src='example.png',  width = 700),br(),
                                       width = 600,
@@ -277,15 +304,19 @@ ui <- dashboardPage(skin = "black",
                                       
                                   ),
                                   box(title = "Annotation methods",status = "success",#solidHeader = TRUE,
-                                      p('After calling / uploading TUs, the scattered interval will be merged upon the indicated reference genes:'),br(),
+                                      p('After calling / uploading TUs, the scattered interval will be merged upon
+                                        the indicated type of references:'),br(),
                                       strong('TU assembling method: '),
                                       br(),
                                       img(src = 'steps.png',  width = 700),br(),
                                       strong('Name the overlapped features.'),
-                                      p("TUs overlapping the chosen features, 'Skip' merging, or 'Join TU' (keeps contineous interval), 'Join exons' (splits at gene boundary, up / down stream parts will be named separately) "), 
+                                      p("TUs overlapping the chosen features, 'Skip' merging, or 'Join TU' (keeps
+                                        contineous interval), 'Join exons' (splits at gene boundary, up / down 
+                                        stream parts will be named separately) "), 
                                       br(),
                                       
-                                      p("(Note: redundant reference genes will interfere the reults, e.g. assigning TU to the embeded pseudogene instead.)"),
+                                      p("(Note: redundant reference genes will interfere the reults, e.g. assigning
+                                        TU to the name of embeded pseudogene.)"),
                                       br(),
                                       
                                       p('Non-coding RNA locations:'),
@@ -295,7 +326,8 @@ ui <- dashboardPage(skin = "black",
                                       
                                   ),
                                   box(title = "Parameter setting", status = "success",#solidHeader = TRUE,
-                                      p('Low expressed gene derives discrete TUs, parameters can help to merge the high certainty TUs.'),
+                                      p('Lowly expressed genes usually generate scattered TUs, parameters can help to merge 
+                                        the intervals of high certainty.'),
                                       br(),
                                       
                                       strong('Joining methods: '),
@@ -303,14 +335,15 @@ ui <- dashboardPage(skin = "black",
                                       p('Transcript isoforms will not be accounted.'),
                                       br(),
                                       strong('Join TU gaps: '),
-                                      p('Scattered intervals gapped by unmappable regions can be joined if a genome mappability file is supplied.'),
+                                      p('Scattered intervals gapped by unmappable regions can be joined if a
+                                        genome mappability file is supplied.'),
                                       br(),
                                       
                                       strong('Minimum overlap: '),
-                                      p('To remove the low expressed TUs on gene reference.'),
+                                      p('To remove the lowly expressed TUs on gene reference.'),
                                       br(),
                                       strong('Mask list: '),
-                                      p('To remove extraordinarily long reference genes that covers many other genes.'),
+                                      p('To remove extraordinarily wide reference genes that covers many other genes.'),
                                       br(),
                                       width = 700,
                                       collapsible = T, collapsed = FALSE
@@ -318,7 +351,8 @@ ui <- dashboardPage(skin = "black",
                                   ),
                                   
                                   box(title = "Info",status = "success",#solidHeader = TRUE,
-                                      p('Michael Lidschreiber wrote the original annotation scripts, Rui Shao adapted and compiled to the shiny app.'),
+                                      p('Michael Lidschreiber wrote the original annotation scripts, Rui Shao
+                                        adapted and compiled to the shiny app.'),
                                       br(),
                                       p('Contact rui.shao@scilifelab.se if there is any question.'),
                                       width = 700,
@@ -453,7 +487,8 @@ server <- shinyServer(function(input, output,session) {
     ov_indx <- paste0("overlap_cutoff_", overlap_types)
     
     Cutoff_inputs <<- lapply(1:2, function(i){
-      numericInput(inputId = ov_indx[i], label = paste(overlap_types[i],"overlap cutoff"), value = 0, min = 0, max = 1,step = 0.01,width = "40%")
+      numericInput(inputId = ov_indx[i], label = paste(overlap_types[i],"overlap cutoff"), value = 0, 
+                   min = 0, max = 1,step = 0.01,width = "40%")
     }) %>% tagList
     
     shinyjs::hidden(Cutoff_inputs)
@@ -484,7 +519,8 @@ server <- shinyServer(function(input, output,session) {
         selectInput(inputId = "stan_mode",
                     multiple = T,
                     HTML(paste("GenoSTAN model")),
-                    choices = c("NegativeBinomial"="NB", "PoissonLogNormal"="Poilog","ZINegativeBinomial"="ZINB","IndependentGaussian"="Gauss"),
+                    choices = c("NegativeBinomial"="NB", "PoissonLogNormal"="Poilog",
+                                "ZINegativeBinomial"="ZINB","IndependentGaussian"="Gauss"),
                     width = '90%',selected = 'Poilog'),
         selectInput(inputId = "mergeMethod",
                     multiple = F,
@@ -492,11 +528,6 @@ server <- shinyServer(function(input, output,session) {
                     choices = c("Skip joining TU"="skip","Join TUs" = "tu","Join exons" = "exon"),
                     width = '90%',selected = 'skip'),
         
-        checkboxInput("jaccardCutoff", "Filter Common TUs", value = FALSE, width = NULL)%>%
-          shinyInput_label_embed(
-            icon("question-circle") %>%
-              bs_embed_tooltip(title = "Cutoff expression below the threshold which has the max jaccard similarity among all samples.")
-          ),
         collapsible = T, collapsed = FALSE,
         # numericInput(inputId = "cutoff_quantile", label = "Cutoff Expression Quantile", value = 0.1, min = 0, max = 5,step = 0.01,width = "80%"),
         actionButton('go','Run')
@@ -605,12 +636,13 @@ server <- shinyServer(function(input, output,session) {
       sample.names <<- lapply(L.sample.list, function(x){
         strsplit(tail(unlist(strsplit(x[1],'\\/')),1),'\\.bam')%>%unlist()%>%head(1)
       })
-      showNotification("Step1 Binning genome...", duration = 2000)
+      showNotification("Step1 Binning genome.", duration = 2000)
       
       all.TU.gr.list = list()
       
       # index bam files
-      bais = lapply(L.sample.list, function(x) sapply(paste0(x,'.bai'), function(y) if(!file.exists(y)) Rsamtools::indexBam(x)))
+      bais = lapply(L.sample.list, function(x) sapply(paste0(x,'.bai'), function(y) 
+        if(!file.exists(y)) Rsamtools::indexBam(x)))
       
       all.readPaired <<- invisible(lapply(L.sample.list, function(x) sapply(x, testPairedEndBam)) )
       
@@ -619,7 +651,7 @@ server <- shinyServer(function(input, output,session) {
       all.binned.counts.list <<- bam_bin_list(L.sample.list, FUN=bamBinCount, all.readPaired)
       
       ### Part2: calling TU -----------------------------------------------------------------------------
-      showNotification("Step2 Calling TU ...", duration = 2000)
+      showNotification("Step2 Calling TU.", duration = 2000)
       for (bams in names(L.sample.list)) {
         strandFlipped <- F
         TU.gr <- Bin_transcribed_TU(binned.RNA.counts.list = all.binned.counts.list[[bams]],
@@ -638,7 +670,8 @@ server <- shinyServer(function(input, output,session) {
       
       # removeNotification("Step2 Calling TU ...")
       showNotification(paste("TU calling cost",
-                             round(difftime(Sys.time(), start_time, units='mins'),digits = 2),"min"),
+                             round(difftime(Sys.time(), start_time, units='mins'),
+                                   digits = 2),"min"),
                        duration = 2000)
       
       names(all.TU.gr.list) <- names(L.sample.list)
@@ -655,8 +688,10 @@ server <- shinyServer(function(input, output,session) {
     
     if (controlVar$bamReady) {
       showNotification("Step3 Expression cutoff ...", duration = 2000)
-      all.TU.expr.list <<- Cutoff_expression(L.sample.list, all.TU.gr.list, all.binned.counts.list)
-      removeNotification("Step3 Expression cutoff ...")
+      all.TU.expr.list <<- Cutoff_expression(L.sample.list, 
+                                             all.TU.gr.list, 
+                                             all.binned.counts.list)
+      removeNotification("Step3 Expression cutoff.")
     }
     
     controlVar$TUgrReady <<- TRUE
@@ -674,7 +709,8 @@ server <- shinyServer(function(input, output,session) {
       } else {
         for (i in seq_along(all.TU.expr.list)) {
           temp.table<-table(all.TU.expr.list[[i]]$location)
-          location.table <<- c(location.table, list(temp.table[order(temp.table,decreasing = T)]) )
+          location.table <<- c(location.table, 
+                               list(temp.table[order(temp.table, decreasing = T)]) )
         }
       }
       controlVar$tableReady <<- TRUE
@@ -691,7 +727,8 @@ server <- shinyServer(function(input, output,session) {
     controlVar$plotReady<<-FALSE
     if(controlVar$tableReady){
       new.table=as.data.frame(location.table[[1]])
-      new.table$Var1=factor(new.table$Var1, levels = new.table$Var1[order(new.table$Freq,decreasing = T)])
+      new.table$Var1=factor(new.table$Var1, 
+                            levels = new.table$Var1[order(new.table$Freq,decreasing = T)])
       
       g <<- ggplot(new.table,aes(x=Var1,y=Freq,fill=Var1)) +
         geom_bar(stat = 'identity') +
@@ -718,7 +755,8 @@ server <- shinyServer(function(input, output,session) {
   })
   
   output$downloadData <- downloadHandler(
-    filename = function() { paste0('TU_filter_annotation',unlist(strsplit(as.character(Sys.time()),split=' '))[1],".zip") },
+    filename = function() { paste0('TU_filter_annotation',
+                                   unlist(strsplit(as.character(Sys.time()), split=' '))[1],".zip") },
     content = function(file) {
       
       if (!is.null(txInput)) {
@@ -754,15 +792,19 @@ server <- shinyServer(function(input, output,session) {
       params.table<-rbind(c('Bam file 1', ifelse(is.null(input$bam_1), NA, bam.file1$name)),
                           c('Bam file 2', ifelse(is.null(input$bam_2), NA, bam.file2$name)),
                           c('Reference genome', input$chr_length),
-                          c('Reference annotation', ifelse(is.null(input$gene_ref), NA, input$gene_ref[, 'name'])),
-                          c('Transcripts input', ifelse(is.null(input$tx_file), NA, input$tx_file[, 'name'])),
-                          c('Annotation mode', ifelse(is.null(input$de_novo_position_features), NA, paste(input$de_novo_position_features, sep = ';'))),
+                          c('Reference annotation', ifelse(is.null(input$gene_ref),
+                                                           NA, input$gene_ref[, 'name'])),
+                          c('Transcripts input', ifelse(is.null(input$tx_file),
+                                                        NA, input$tx_file[, 'name'])),
+                          c('Annotation mode', ifelse(is.null(input$de_novo_position_features),
+                                                      NA, paste(input$de_novo_position_features, sep = ';'))),
                           c('Minimum TU overlap', ovCutoff),
                           c('Minimum gene overlap', annoCutoff),
                           c('TSS length', ifelse(is.null(TSS_len), NA, TSS_len)),
                           c('Promoter length', ifelse(is.null(Promoter_len), NA, Promoter_len)),
                           c('TTS length', ifelse(is.null(TTS_len), NA, TTS_len)),
-                          c('Expression cutoff', ifelse(is.null(input$expr_cutoff), NA, input$expr_cutoff))
+                          c('Expression cutoff', ifelse(is.null(input$expr_cutoff), 
+                                                        NA, input$expr_cutoff))
       )
       params=list(n=params.table)
       
@@ -835,11 +877,19 @@ server <- shinyServer(function(input, output,session) {
                          hist(mid.pos.minus, breaks=br, include.lowest=TRUE, plot=FALSE)$count)
       } else {
         if (paired.end) {
-          cov.plus = with(chr.srg.plus, coverage(IRanges(start = pos, width=isize+qwidth),width = chr.lengths[chr] ))
-          cov.minus = with(chr.srg.minus, coverage(IRanges(start = pos, width=-isize+qwidth),width = chr.lengths[chr]))
+          cov.plus = with(chr.srg.plus,
+                          coverage(IRanges(start = pos, width=isize+qwidth),
+                                   width = chr.lengths[chr] ))
+          cov.minus = with(chr.srg.minus,
+                           coverage(IRanges(start = pos, width=-isize+qwidth),
+                                    width = chr.lengths[chr]))
         } else {
-          cov.plus = with(chr.srg.plus, coverage(IRanges(start = pos, width=qwidth),width = chr.lengths[chr] ))
-          cov.minus = with(chr.srg.minus, coverage(IRanges(start = pos, width=qwidth),width = chr.lengths[chr]))
+          cov.plus = with(chr.srg.plus, 
+                          coverage(IRanges(start = pos, width=qwidth),
+                                   width = chr.lengths[chr] ))
+          cov.minus = with(chr.srg.minus, 
+                           coverage(IRanges(start = pos, width=qwidth),
+                                    width = chr.lengths[chr]))
         }
         binSum = function(chr.cov, binning) {
           bin = seq_len(chr.lengths[chr] %/% binning)*binning
@@ -849,7 +899,8 @@ server <- shinyServer(function(input, output,session) {
         freq.mat = cbind(binSum(cov.plus, binning),
                          binSum(cov.minus, binning)) / binning
       }
-      bam.name = strsplit(tail(unlist(strsplit(bam.file,'\\/')),1),'\\.bam')%>%unlist()%>%head(1)
+      bam.name = strsplit(tail(unlist(strsplit(bam.file,'\\/')),1),'\\.bam') %>% 
+        unlist() %>% head(1)
       colnames(freq.mat) = c(paste(bam.name,"+"),paste(bam.name,"-"))
       return(freq.mat)
     }
@@ -895,14 +946,23 @@ server <- shinyServer(function(input, output,session) {
       chr.srg.minus = lapply(srg, function(x) x=x[with(srg, rname == chr & strand == '-')])
       
       if (paired.end) {
-        cov.rle = list(with(chr.srg.plus, coverage(IRanges(start = pos, width=isize+qwidth),width = chr.lengths[chr] )),
-                       with(chr.srg.minus, coverage(IRanges(start = pos, width=-isize+qwidth),width = chr.lengths[chr])) )
+        cov.rle = list(with(chr.srg.plus,
+                            coverage(IRanges(start = pos, width=isize+qwidth),
+                                     width = chr.lengths[chr] )),
+                       with(chr.srg.minus,
+                            coverage(IRanges(start = pos, width=-isize+qwidth),
+                                     width = chr.lengths[chr])) )
       } else {
-        cov.rle = list(with(chr.srg.plus, coverage(IRanges(start = pos, width=qwidth),width = chr.lengths[chr] )),
-                       with(chr.srg.minus, coverage(IRanges(start = pos, width=qwidth),width = chr.lengths[chr])) )
+        cov.rle = list(with(chr.srg.plus, 
+                            coverage(IRanges(start = pos, width=qwidth),
+                                     width = chr.lengths[chr] )),
+                       with(chr.srg.minus, 
+                            coverage(IRanges(start = pos, width=qwidth),
+                                     width = chr.lengths[chr])) )
       }
       
-      bam.name = strsplit(tail(unlist(strsplit(bam.file,'\\/')),1),'\\.bam')%>%unlist()%>%head(1)
+      bam.name = strsplit(tail(unlist(strsplit(bam.file,'\\/')),1),'\\.bam') %>%
+        unlist()%>%head(1)
       names(cov.rle) = c(paste(bam.name,"+"),paste(bam.name,"-"))
       return(cov.rle)
     }
@@ -922,7 +982,7 @@ server <- shinyServer(function(input, output,session) {
       paired.end = all.readPaired[[bams]]
       
       chr.lengths = seqlengths(seqinfo(BamFile(bam.paths[1])))
-      chr.names <<- paste0('chr',c(1:100,'X','Y'))[paste0('chr',c(1:100,'X','Y'))%in%names(chr.lengths)]
+      chr.names <<- paste0('chr',c(1:100,'X','Y'))[paste0('chr',c(1:100,'X','Y')) %in% names(chr.lengths)]
       chr.lengths <<- chr.lengths[chr.names]
       
       if (length(bam.paths)>1) {
@@ -983,7 +1043,8 @@ server <- shinyServer(function(input, output,session) {
     seqlevelsStyle(import_input) = "UCSC"
     
     import_input = import_input[seqnames(import_input)%in%paste0('chr',c(1:100,'X','Y'))]
-    import_input = keepSeqlevels(import_input, unique(seqnames(import_input)), pruning.mode="coarse")
+    import_input = keepSeqlevels(import_input, unique(seqnames(import_input)), 
+                                 pruning.mode="coarse")
     
     return(import_input)
   }
@@ -1003,7 +1064,8 @@ server <- shinyServer(function(input, output,session) {
     object.strand = as.character(strand(object.gr)) == '+'
     
     if (targets != "full") {
-      exon.gr = Gene_input[Gene_input$type == "exon" & Gene_input$transcript_id%in%object.gr$transcript_id]
+      exon.gr = Gene_input[Gene_input$type == "exon" &
+                             Gene_input$transcript_id %in%object.gr$transcript_id]
     }
     
     for (i in seq_along(bam.files)) {
@@ -1044,15 +1106,18 @@ server <- shinyServer(function(input, output,session) {
       srg.temp = list()
       for (n in seq_along(object.gr)) {
         # Filter short reads by mapping quality and insertion size.
-        all.index = with(sr.in.ranges[[n]], (mapq>3 & strand == as.character(strand(object.gr[n])) ))
+        all.index = with(sr.in.ranges[[n]], 
+                         mapq>3 & strand == as.character(strand(object.gr[n])))
         if (is.paired.end) all.index = all.index & with(sr.in.ranges[[n]], !is.na(isize))
-        srg.temp = c(srg.temp, list(lapply(sr.in.ranges[[n]],function(x) x=x[all.index])) )
+        srg.temp = c(srg.temp, list(lapply(sr.in.ranges[[n]], 
+                                           function(x) x=x[all.index])) )
       }
       names(srg.temp) = names(sr.in.ranges)
       if(!exists('srg.filtered')){
         srg.filtered = srg.temp
       }else{
-        srg.filtered = lapply(names(srg.temp),function(y) new=combind.list(srg.temp[[y]],srg.filtered[[y]]) )
+        srg.filtered = lapply(names(srg.temp),function(y) 
+          new=combind.list(srg.temp[[y]],srg.filtered[[y]]) )
       }
     }
     
@@ -1061,15 +1126,30 @@ server <- shinyServer(function(input, output,session) {
     {
       if (targets == "full") 
       {
-        cov = with( srg.filtered[[n]], coverage(IRanges(start = pos-object.start[n], width= ifelse(is.paired.end, abs(isize),0)+qwidth ), width = width(object.gr[n]) ))
+        cov = with( srg.filtered[[n]],
+                    coverage(IRanges(start = pos-object.start[n],
+                                     width= ifelse(is.paired.end, abs(isize),0)+qwidth ), 
+                             width = width(object.gr[n]) ))
       } else if (targets == "exon")
       {
-        ov.index = with( srg.filtered[[n]], findOverlaps(IRanges(start = pos, width = qwidth), ranges(exon.gr[exon.gr$gene_id == object.gr[n]$gene_id]))%>%countQueryHits()!=0 )
-        cov = with( lapply(srg.filtered[[n]],function(x) x[ov.index]), coverage(IRanges(start = pos-object.start[n], width= ifelse(is.paired.end, abs(isize),0)+qwidth ), width = width(object.gr[n]) ))
+        ov.index = with( srg.filtered[[n]], 
+                         findOverlaps(IRanges(start = pos, width = qwidth), 
+                                      ranges(exon.gr[exon.gr$gene_id == object.gr[n]$gene_id])) %>%
+                           countQueryHits()!=0 )
+        cov = with( lapply(srg.filtered[[n]], function(x) x[ov.index]), 
+                    coverage(IRanges(start = pos-object.start[n],
+                                     width= ifelse(is.paired.end, abs(isize),0)+qwidth ), 
+                             width = width(object.gr[n]) ))
       } else if(targets == "intron")
       {
-        ov.index = with( srg.filtered[[n]], findOverlaps(IRanges(start = pos, width = qwidth), ranges(exon.gr[exon.gr$gene_id == object.gr[n]$gene_id]))%>%countQueryHits() == 0 )
-        cov = with( lapply(srg.filtered[[n]],function(x) x[ov.index]), coverage(IRanges(start = pos-object.start[n], width= ifelse(is.paired.end, abs(isize),0)+qwidth ), width = width(object.gr[n]) ))
+        ov.index = with( srg.filtered[[n]], 
+                         findOverlaps(IRanges(start = pos, width = qwidth),
+                                      ranges(exon.gr[exon.gr$gene_id == object.gr[n]$gene_id])) %>%
+                           countQueryHits() == 0 )
+        cov = with( lapply(srg.filtered[[n]],function(x) x[ov.index]),
+                    coverage(IRanges(start = pos-object.start[n], 
+                                     width= ifelse(is.paired.end, abs(isize),0)+qwidth ), 
+                             width = width(object.gr[n]) ))
       }
       if(!object.strand[n]) cov=rev(cov)
       cov.list = c(cov.list, cov)
@@ -1131,7 +1211,10 @@ server <- shinyServer(function(input, output,session) {
     anno_matching_tus = tus[min.cutoffIdx[[1]]]
     anno_matching_tus$gene_id = anno$gene_id[min.cutoffIdx[[2]]]  ###give gene_id to any tu overlapping with genes, help to know related genes in downstream analysis
     
-    cutoff_matching_tus = all_matching_tus[findOverlaps(query = anno_matching_tus, subject = all_matching_tus, type = "equal",ignore.strand=FALSE)%>%countSubjectHits() == 0]
+    cutoff_matching_tus = all_matching_tus[findOverlaps(query = anno_matching_tus, 
+                                                        subject = all_matching_tus, 
+                                                        type = "equal",ignore.strand=FALSE) %>%
+                                             countSubjectHits() == 0]
     
     if (length(anno_matching_tus)>0) {
       sp = split(anno_matching_tus, anno_matching_tus$gene_id)
@@ -1215,13 +1298,18 @@ server <- shinyServer(function(input, output,session) {
     anno_matching_tus$gene_id = anno$gene_id[min.cutoffIdx[[2]]]  ### give gene_id to any tu overlapping with genes, help to know related genes in downstream analysis
     
     # keep the tu interval couldn't reach minimum cutoff
-    cutoff_matching_tus=all_matching_tus[findOverlaps(query = anno_matching_tus, subject = all_matching_tus, type = "equal",ignore.strand=FALSE)%>%countSubjectHits() == 0]
+    cutoff_matching_tus=all_matching_tus[findOverlaps(query = anno_matching_tus,
+                                                      subject = all_matching_tus,
+                                                      type = "equal",
+                                                      ignore.strand=FALSE) %>%
+                                           countSubjectHits() == 0]
     
     if(length(anno_matching_tus)>0){
       sp = split(anno_matching_tus, anno_matching_tus$gene_id)
       message(paste(seqnames(tus)[1],': found minimum overlap', length(sp), 'of', length(anno),'genes'))
       
-      exon_matching_tus.merged = foreach(g = names(sp), .combine="c",.packages = c('IRanges','GenomicRanges')) %dopar% {
+      exon_matching_tus.merged = foreach(g = names(sp), .combine="c",
+                                         .packages = c('IRanges','GenomicRanges')) %dopar% {
         exons.gene_id = exons[exons$gene_id == g]
         transcripts.gene_id = transcripts[transcripts$gene_id == g]# all transcripts variant in the reference for gene g
         tu_subset = sp[[g]]
@@ -1229,7 +1317,8 @@ server <- shinyServer(function(input, output,session) {
         ### Previous strategy: 'extend upstream flank of first tu, in some cases the 1st TU starting sites are behind the end of 1st exons'
         ### Now new strategy: find tu overlap on TSS/1st exon, or closest 1st exon in annotated transcripts
         ### get %overlaps of tu cross transcripts, return the smallest distance between tu and transcript-100%-overlap while transcript keeps the shorter
-        tu_subset.boundary = tu_subset[1];start(tu_subset.boundary)=min(start(tu_subset));end(tu_subset.boundary)=max(end(tu_subset))#maximum exon overlapped width
+        tu_subset.boundary = tu_subset[1];start(tu_subset.boundary) = min(start(tu_subset))
+        end(tu_subset.boundary) = max(end(tu_subset))#maximum exon overlapped width
         tu_subset_1flank = tu_subset
         tu_1.Idx = ifelse(as.character(strand(tu_subset[1])) == '+',1,length(tu_subset))
         tu_subset_1flank[tu_1.Idx] = tu_subset_1flank[tu_1.Idx]+1000
@@ -1291,7 +1380,8 @@ server <- shinyServer(function(input, output,session) {
         return(tu_return_subset)
       }
       
-      nc.gene.disjoin.idx = which(exon_matching_tus.merged$gene_type == 'ncRNA' & exon_matching_tus.merged$exonOV == T)
+      nc.gene.disjoin.idx = which(exon_matching_tus.merged$gene_type == 'ncRNA' & 
+                                    exon_matching_tus.merged$exonOV == T)
       ### reduce non-coding tus redundantly overlap multiple genes
       if (length(nc.gene.disjoin.idx) > 0)
       {
@@ -1363,36 +1453,52 @@ server <- shinyServer(function(input, output,session) {
   
   txLocation <<- function(ncRNAs.gr, main.genes.gr)
   {
-    within.sense = findOverlaps(ncRNAs.gr, main.genes.gr,  type = 'within',ignore.strand=FALSE) ###add type = 'within'
+    within.sense = findOverlaps(ncRNAs.gr, main.genes.gr,  
+                                type = 'within',ignore.strand=FALSE) ###add type = 'within'
     ncRNAs_antisense = ncRNAs.gr
     levels(strand(ncRNAs_antisense)) = c("-","+","*")
-    within.antisense = findOverlaps(ncRNAs_antisense, main.genes.gr, type = 'any', ignore.strand=FALSE) ###add type = 'any'
+    within.antisense = findOverlaps(ncRNAs_antisense, main.genes.gr, 
+                                    type = 'any', ignore.strand=FALSE) ###add type = 'any'
     
-    if(length(queryHits(within.antisense))>0) ncRNAs.gr$location[unique(queryHits(within.antisense))] = "antisense"
-    if(length(queryHits(within.sense))>0) ncRNAs.gr$location[unique(queryHits(within.sense))] = "gene_sense"
+    if(length(queryHits(within.antisense))>0) 
+      ncRNAs.gr$location[unique(queryHits(within.antisense))] = "antisense"
+    if(length(queryHits(within.sense))>0) 
+      ncRNAs.gr$location[unique(queryHits(within.sense))] = "gene_sense"
     if (T)
     {
       ncRNAs.TSS = promoters(ncRNAs.gr, upstream=1, downstream=0)
       gene.TSS = promoters(main.genes.gr, upstream = 1, downstream = 0)
       levels(strand(ncRNAs.TSS)) = c("-","+","*")
-      upstream.antisense = findOverlaps(ncRNAs.TSS, gene.TSS, ignore.strand=FALSE, maxgap = TSS_len)
+      upstream.antisense = findOverlaps(ncRNAs.TSS, gene.TSS, 
+                                        ignore.strand=FALSE, maxgap = TSS_len)
       
       plus = which(strand(gene.TSS[subjectHits(upstream.antisense)]) == "+")
       minus = which(strand(gene.TSS[subjectHits(upstream.antisense)]) == "-")
-      plus.prompt = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][plus]) < start(gene.TSS[subjectHits(upstream.antisense)][plus]))
-      minus.prompt = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][minus]) > start(gene.TSS[subjectHits(upstream.antisense)][minus]))
+      
+      plus.prompt = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][plus]) <
+                            start(gene.TSS[subjectHits(upstream.antisense)][plus]))
+      
+      minus.prompt = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][minus]) >
+                             start(gene.TSS[subjectHits(upstream.antisense)][minus]))
+      
       prompt = c(plus[plus.prompt],minus[minus.prompt])
       
-      plus.conv = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][plus]) > start(gene.TSS[subjectHits(upstream.antisense)][plus]))
-      minus.conv = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][minus]) < start(gene.TSS[subjectHits(upstream.antisense)][minus]))
+      plus.conv = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][plus]) > 
+                          start(gene.TSS[subjectHits(upstream.antisense)][plus]))
+      
+      minus.conv = which(start(ncRNAs.TSS[queryHits(upstream.antisense)][minus]) < 
+                           start(gene.TSS[subjectHits(upstream.antisense)][minus]))
+      
       conv = c(plus[plus.conv],minus[minus.conv])
       
-      if (length(conv) > 0) ncRNAs.gr$location[queryHits(upstream.antisense)[conv]] = "conRNA"
-      if (length(prompt) > 0) ncRNAs.gr$location[queryHits(upstream.antisense)[prompt]] = "uaRNA"
+      if (length(conv) > 0) 
+        ncRNAs.gr$location[queryHits(upstream.antisense)[conv]] = "conRNA"
+      if (length(prompt) > 0) 
+        ncRNAs.gr$location[queryHits(upstream.antisense)[prompt]] = "uaRNA"
     }
     if (mergeMethod == 'exon')
     {
-      downstream.regions = flank(main.genes.gr, width=TTS_len, start=FALSE) + 2 ###+2 for disjoined nc parts
+      downstream.regions = flank(main.genes.gr, width=TTS_len, start=FALSE) + 2 ###+2 to disjoin nc parts
       ncRNAs.TSS = promoters(ncRNAs.gr, upstream=1, downstream=0)
       downstream = findOverlaps(ncRNAs.TSS, downstream.regions)
       
@@ -1401,10 +1507,11 @@ server <- shinyServer(function(input, output,session) {
         ncRNAs.gr$location[unique(queryHits(downstream))] = "dsRNA"
       }
       # add usRNA and daRNA
-      upstream.regions = promoters(main.genes.gr, upstream=Promoter_len, downstream=0) + 2 ###+2 for disjoined nc parts
+      upstream.regions = promoters(main.genes.gr, upstream=Promoter_len, downstream=0) + 2 ###+2 to disjoin nc parts
       ncRNAs.TTS = flank(ncRNAs.gr,width=1,start=F)
       upstream.sense = findOverlaps(ncRNAs.TTS, upstream.regions)
-      if (length(queryHits(upstream.sense))>0) ncRNAs.gr$location[unique(queryHits(upstream.sense))] = "usRNA"
+      if (length(queryHits(upstream.sense))>0) 
+        ncRNAs.gr$location[unique(queryHits(upstream.sense))] = "usRNA"
     }
     
     ncRNAs.TTS=flank(ncRNAs.gr,width=1,start=F)
@@ -1422,26 +1529,33 @@ server <- shinyServer(function(input, output,session) {
       upstream.regions = promoters(main.genes.gr, upstream=Promoter_len, downstream=0)
       ncRNAs.TTS = flank(ncRNAs.gr,width=1,start=F)
       upstream.sense = findOverlaps(ncRNAs.TTS, upstream.regions)
-      if (length(queryHits(upstream.sense))>0) ncRNAs.gr$location[unique(queryHits(upstream.sense))] = "usRNA"
+      if (length(queryHits(upstream.sense))>0) 
+        ncRNAs.gr$location[unique(queryHits(upstream.sense))] = "usRNA"
       
       ncRNAs.TSS = promoters(ncRNAs.gr, upstream=1, downstream=0)
       downstream = findOverlaps(ncRNAs.TSS, downstream.regions)
-      if (length(queryHits(downstream))>0) ncRNAs.gr$location[unique(queryHits(downstream))] = "dsRNA"
+      if (length(queryHits(downstream))>0) 
+        ncRNAs.gr$location[unique(queryHits(downstream))] = "dsRNA"
     }
     return(ncRNAs.gr)
   }
+  
   # GRanges interval calling function with GenoStan
   STAN_anno <<- function(binned.RNA.counts.list)
   {
     sample.num = ncol(binned.RNA.counts.list[[1]]) / 2
     if (sample.num>1)
     {
-      binned.plus.merged = lapply(binned.RNA.counts.list, function(x) x[, seq(1,sample.num*2-1, by = 2)])
-      binned.minus.merged = lapply(binned.RNA.counts.list, function(x) x[, seq(2,sample.num*2, by = 2)])
+      binned.plus.merged = lapply(binned.RNA.counts.list, 
+                                  function(x) x[, seq(1,sample.num*2-1, by = 2)])
+      binned.minus.merged = lapply(binned.RNA.counts.list,
+                                   function(x) x[, seq(2,sample.num*2, by = 2)])
     } else
     {
-      binned.plus.merged = lapply(binned.RNA.counts.list, function(x) matrix(x[,1], ncol = 1) )
-      binned.minus.merged = lapply(binned.RNA.counts.list, function(x) matrix(x[,2], ncol = 1) )
+      binned.plus.merged = lapply(binned.RNA.counts.list,
+                                  function(x) matrix(x[,1], ncol = 1) )
+      binned.minus.merged = lapply(binned.RNA.counts.list,
+                                   function(x) matrix(x[,2], ncol = 1) )
     }
     names(binned.plus.merged) = paste(names(binned.plus.merged), ".L", sep="")
     names(binned.minus.merged) = paste(names(binned.minus.merged), ".L", sep="")
@@ -1465,19 +1579,23 @@ server <- shinyServer(function(input, output,session) {
     sizeFactors.minus = getSizeFactors(binned.minus.merged, celltypes)
     
     # add background counts
-    binned.plus = lapply(binned.plus.merged, function(x) x + 2)
-    binned.minus = lapply(binned.minus.merged, function(x) x + 2)
+    binned.plus = lapply(binned.plus.merged, function(x) x + 1)
+    binned.minus = lapply(binned.minus.merged, function(x) x + 1)
     
     anno = GRanges()
     anno = foreach(i = seq_along(fit_method), .combine = c, .packages = c("STAN")) %dopar% {
       # watson strand
-      segmentation = segment_model_fitting(binned.plus, fit_method[i], nStates, ncores, sizeFactors.plus, pilot.mm10.regions)
+      segmentation = segment_model_fitting(binned.plus, fit_method[i],
+                                           nStates, ncores, sizeFactors.plus,
+                                           pilot.mm10.regions)
       expState = segmentation[2]$name
       segmentation = segmentation[which(segmentation$name == expState)]
       strand(segmentation) = "+"
       anno = c(anno, segmentation)
       # crick strand
-      segmentation = segment_model_fitting(binned.minus, fit_method[i], nStates, ncores, sizeFactors.minus, pilot.mm10.regions)
+      segmentation = segment_model_fitting(binned.minus, fit_method[i], 
+                                           nStates, ncores, sizeFactors.minus,
+                                           pilot.mm10.regions)
       expState = segmentation[2]$name
       segmentation = segmentation[which(segmentation$name == expState)]
       strand(segmentation) = "-"
@@ -1559,7 +1677,7 @@ server <- shinyServer(function(input, output,session) {
   {
     # this function will exclude some psudeogenes for avoiding gene embeding issue
     showNotification('Preparing minimal gene transcripts...')
-    chr.names = names(table(seqnames(TU_input)))[table(seqnames(TU_input))>0]
+    chr.names = names(table(seqnames(TU_input)))[table(seqnames(TU_input)) > 0]
     if (!'gene'%in%unique(Gene_input$type))
     {
       stop("Annotation reference does not contain any 'gene' feature.
@@ -1647,9 +1765,12 @@ server <- shinyServer(function(input, output,session) {
     
     if (length(dup.ranges) > 0)
     {
-      all.dup.ranges = c(current.TU.plus[ranges(current.TU.plus) %in% ranges(current.TU.plus[dup.ranges.plus])],
-                         current.TU.minus[ranges(current.TU.minus) %in% ranges(current.TU.minus[dup.ranges.minus])])
-      unique.TU.gr = current.TU.gr[!current.TU.gr$gene_id%in%all.dup.ranges$gene_id]
+      all.dup.ranges = c(current.TU.plus[ranges(current.TU.plus) %in% 
+                                           ranges(current.TU.plus[dup.ranges.plus])],
+                         current.TU.minus[ranges(current.TU.minus) %in% 
+                                            ranges(current.TU.minus[dup.ranges.minus])])
+      unique.TU.gr = current.TU.gr[!current.TU.gr$gene_id %in% all.dup.ranges$gene_id]
+      
       max.gene.TU.id = foreach(x = seq_along(dup.ranges), .combine = c) %dopar% {
         temp.gene = current.ref[findOverlaps(query = dup.ranges[x], subject = current.ref) %>%
                                   countSubjectHits() > 0]
@@ -1678,9 +1799,11 @@ server <- shinyServer(function(input, output,session) {
     
     chr.names = names(table(seqnames(TU_input)))[table(seqnames(TU_input))>0]
     # some library prep methods could have mate in pairs as the forward reads, check which strand has max gene coverage
-    all_matched = TU_input[min.cutoff(TU_input, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] %>% width() %>% sum()
-    TU_input_rev = TU_input; levels(strand(TU_input_rev))=c("-", "+", "*")
-    all_matched_rev = TU_input_rev[min.cutoff(TU_input_rev, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] %>% width() %>% sum()
+    all_matched = TU_input[min.cutoff(TU_input, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] %>% 
+      width() %>% sum()
+    TU_input_rev = TU_input; levels(strand(TU_input_rev)) = c("-", "+", "*")
+    all_matched_rev = TU_input_rev[min.cutoff(TU_input_rev, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] %>%
+      width() %>% sum()
     
     if (all_matched_rev > all_matched)
     {
@@ -1698,7 +1821,9 @@ server <- shinyServer(function(input, output,session) {
         all_matching_tus = TU_input[all.cutoffIdx[[1]]]
         all_matching_tus$gene_id = gene.gr$gene_id[all.cutoffIdx[[2]]]
         all_matching_tus$transcript_id = gene.gr$transcript_id[all.cutoffIdx[[2]]]
-        all_matching_tus$type = ifelse(gene.gr$gene_type[all.cutoffIdx[[2]]] == 'protein_coding','protein_coding','ncRNA')
+        all_matching_tus$type = 
+          ifelse(gene.gr$gene_type[all.cutoffIdx[[2]]] == 'protein_coding',
+                 'protein_coding','ncRNA')
         all_matching_tus$gene_type = gene.gr$gene_type[all.cutoffIdx[[2]]]
         # remove duplicated gene overlapped ranges
         all_matching_tus = all_matching_tus[!duplicated(all.cutoffIdx[[1]])]
@@ -1708,7 +1833,8 @@ server <- shinyServer(function(input, output,session) {
       TU.gr$location = TU.gr$type
       if (is.null(TU.gr$id)) TU.gr$id = seq_along(TU.gr)
       if (is.null(TU.gr$expr)) TU.gr$expr = 0
-      mcols(TU.gr) = mcols(TU.gr)[, c('id','expr','gene_id','transcript_id','exonOV','type','gene_type','location')]
+      mcols(TU.gr) = mcols(TU.gr)[, c('id','expr','gene_id','transcript_id','exonOV',
+                                      'type','gene_type','location')]
       
       our.genes = TU.gr[TU.gr$type == 'protein_coding']
       ref.gene = gene.gr[gene.gr$gene_type == 'protein_coding']
@@ -1752,17 +1878,27 @@ server <- shinyServer(function(input, output,session) {
       nc_reduce.gap = nc_reduce.gap[width(nc_reduce.gap) < 1500]
       unmappable.gr <<- import.input.ranges(unmappable,T)
       unmappable.gr = unmappable.gr[width(unmappable.gr) < 1000000] + binning # extend ranges by the average reads insert size
-      nc_reduce.gap = nc_reduce.gap[findOverlaps(query = unmappable.gr, subject = nc_reduce.gap,  type = 'any',ignore.strand=T)%>%countSubjectHits()>0]
-      ncRNAs.reduce.gap.Idx = findOverlaps(query = nc_reduce.gap + 1, subject = ncRNAs.gr,  type = 'any',ignore.strand=F)
+      nc_reduce.gap = nc_reduce.gap[findOverlaps(query = unmappable.gr,
+                                                 subject = nc_reduce.gap, 
+                                                 type = 'any',
+                                                 ignore.strand=T) %>%
+                                      countSubjectHits()>0]
+      
+      ncRNAs.reduce.gap.Idx = findOverlaps(query = nc_reduce.gap + 1, 
+                                           subject = ncRNAs.gr,
+                                           type = 'any',
+                                           ignore.strand=F)
       ncRNAs.nonreduce.gr = ncRNAs.gr[countSubjectHits(ncRNAs.reduce.gap.Idx) == 0]
-      sp.ncRNA.reduce.ls = split(ncRNAs.gr[subjectHits(ncRNAs.reduce.gap.Idx)], queryHits(ncRNAs.reduce.gap.Idx))
+      sp.ncRNA.reduce.ls = split(ncRNAs.gr[subjectHits(ncRNAs.reduce.gap.Idx)], 
+                                 queryHits(ncRNAs.reduce.gap.Idx))
       ncRNA.reduce.gr = GRanges()
       ncRNA.reduce.gr = foreach(i=1:length(sp.ncRNA.reduce.ls),.combine = c) %dopar% {
         temp.reduce.gr=sp.ncRNA.reduce.ls[[i]]
         return.reduce.gr=temp.reduce.gr[1]
         start(return.reduce.gr)=min(start(temp.reduce.gr))
         end(return.reduce.gr)=max(end(temp.reduce.gr))
-        if (!is.null(return.reduce.gr$score)) return.reduce.gr$score = mean(temp.reduce.gr$score)
+        if (!is.null(return.reduce.gr$score)) 
+          return.reduce.gr$score = mean(temp.reduce.gr$score)
         return(return.reduce.gr)
       }
       ncRNAs.gr = reduce(c(ncRNA.reduce.gr, ncRNAs.nonreduce.gr))
@@ -1785,21 +1921,30 @@ server <- shinyServer(function(input, output,session) {
       ncRNAs.gr$id = NA
       ncRNAs.gr$expr = 0
       # give old id to reduced ncRNA
-      nc.ov.idx = findOverlaps(query = ncRNAs.gr, subject = TU.gr[TU.gr$type == "ncRNA"], ignore.strand = F)
-      ncRNAs.gr$id = base::replace(ncRNAs.gr$id, queryHits(nc.ov.idx), TU.gr[TU.gr$type == "ncRNA"]$id[subjectHits(nc.ov.idx)])
+      nc.ov.idx = findOverlaps(query = ncRNAs.gr, 
+                               subject = TU.gr[TU.gr$type == "ncRNA"],
+                               ignore.strand = F)
+      ncRNAs.gr$id = base::replace(ncRNAs.gr$id, queryHits(nc.ov.idx),
+                                   TU.gr[TU.gr$type == "ncRNA"]$id[subjectHits(nc.ov.idx)])
       # ncRNAs.gr$expr=base::replace(ncRNAs.gr$expr,queryHits(nc.ov.idx),TU.gr[TU.gr$type == "ncRNA"]$expr[subjectHits(nc.ov.idx)])
       ncRNAs.gr$gene_id = as.character(NA)
       ncRNAs.gr$transcript_id = as.character(NA)
       ncRNAs.gr$exonOV = FALSE
       ncRNAs.gr$type = "ncRNA"
       ncRNAs.gr$gene_type = "ncRNA"
-      nc.ov.idx = findOverlaps(query = ncRNAs.gr, subject = Gene_input[Gene_input$gene_type!='protein_coding'],ignore.strand=F,minoverlap = binning)
-      ncRNAs.gr$gene_type = base::replace(ncRNAs.gr$gene_type, queryHits(nc.ov.idx), Gene_input[Gene_input$gene_type!='protein_coding']$gene_type[subjectHits(nc.ov.idx)])
+      nc.ov.idx = findOverlaps(query = ncRNAs.gr, 
+                               subject = Gene_input[Gene_input$gene_type!='protein_coding'],
+                               ignore.strand=F,minoverlap = binning)
+      ncRNAs.gr$gene_type = base::replace(ncRNAs.gr$gene_type, 
+                                          queryHits(nc.ov.idx), 
+                                          Gene_input[Gene_input$gene_type != 'protein_coding']$gene_type[subjectHits(nc.ov.idx)])
       ncRNAs.gr$location = "intergenic"
-      mcols(ncRNAs.gr) = mcols(ncRNAs.gr)[, c('id','expr','gene_id','transcript_id','exonOV','type','gene_type','location')]
+      mcols(ncRNAs.gr) = mcols(ncRNAs.gr)[, c('id','expr','gene_id','transcript_id',
+                                              'exonOV','type','gene_type','location')]
       coding.gr = TU.gr[TU.gr$type != "ncRNA"]
       coding.gr$location = "protein_coding"
-      mcols(coding.gr) = mcols(coding.gr)[, c('id','expr','gene_id','transcript_id','exonOV','type','gene_type','location')]
+      mcols(coding.gr) = mcols(coding.gr)[, c('id','expr','gene_id','transcript_id',
+                                              'exonOV','type','gene_type','location')]
       # write location
       TU.gr = c(coding.gr, txLocation(ncRNAs.gr, main.genes.gr) ) %>% sort
     }
@@ -1811,11 +1956,14 @@ server <- shinyServer(function(input, output,session) {
   {
     # etract bin counts on the chromosome existing in all the samples
     binned.RNA.counts.list = list()
-    temp.chrs = lapply(all.binned.counts.list, function(x) names(x)) %>% unlist() %>% table()
-    temp.chrs = intersect(c(paste0('chr',1:100),'chrX','chrY'), names(temp.chrs)[temp.chrs == length(all.binned.counts.list)])
+    temp.chrs = lapply(all.binned.counts.list, 
+                       function(x) names(x)) %>% unlist() %>% table()
+    temp.chrs = intersect(c(paste0('chr',1:100),'chrX','chrY'), 
+                          names(temp.chrs)[temp.chrs == length(all.binned.counts.list)])
     for (chr in temp.chrs)
     {
-      binned.RNA.counts.list[[chr]] = Reduce(cbind, lapply(all.binned.counts.list, function(x) x[[chr]] ))
+      binned.RNA.counts.list[[chr]] = Reduce(cbind, lapply(all.binned.counts.list,
+                                                           function(x) x[[chr]] ))
     }
     return(binned.RNA.counts.list)
   }
@@ -1965,11 +2113,14 @@ server <- shinyServer(function(input, output,session) {
         col_idx = seq(1, temp.sample.num * 2, 2)
         for (i in seq_along(gene.temp.plus))
         {
-          exon.id.temp = exon.temp.plus[queryHits(exon.plus.matches)[subjectHits(exon.plus.matches) == i]] %>% reduce()
-          bin.gene.matches = queryHits(bin.gene.plus.matches)[subjectHits(bin.gene.plus.matches) == i]
-          bin.exon.matches = bin.gene.matches[findOverlaps(query = bin.ranges[bin.gene.matches],
-                                                           subject = ranges(exon.id.temp),
-                                                           minoverlap = binning * 2/3) %>% countQueryHits()>0]
+          exon.id.temp = 
+            exon.temp.plus[queryHits(exon.plus.matches)[subjectHits(exon.plus.matches) == i]] %>% reduce()
+          bin.gene.matches = 
+            queryHits(bin.gene.plus.matches)[subjectHits(bin.gene.plus.matches) == i]
+          bin.exon.matches = 
+            bin.gene.matches[findOverlaps(query = bin.ranges[bin.gene.matches],
+                                          subject = ranges(exon.id.temp),
+                                          minoverlap = binning * 2/3) %>% countQueryHits()>0]
           bin.gene.matches = bin.gene.matches[bin.gene.matches < nrow(binned.temp.counts)]
           bin.exon.matches = bin.exon.matches[bin.exon.matches < nrow(binned.temp.counts)]
           if (countExon)
@@ -1988,24 +2139,31 @@ server <- shinyServer(function(input, output,session) {
           {
             if (length(setdiff(bin.gene.matches, bin.exon.matches)) == 1)
             {
-              chr.counts = rbind(chr.counts,
-                                 binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx] %>% t )
+              chr.counts = 
+                rbind(chr.counts,
+                      binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx] %>% t )
             } else
             {
-              chr.counts = rbind(chr.counts,
-                                 do.call(ifelse(RPK, 'colMeans', 'colSums'),
-                                         list(binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx])) )
+              chr.counts = 
+                rbind(chr.counts,
+                      do.call(ifelse(RPK, 'colMeans', 'colSums'),
+                              list(binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx])) )
             }
           }
         }
         
         for (i in seq_along(gene.temp.minus))
         {
-          exon.id.temp = exon.temp.minus[queryHits(exon.minus.matches)[subjectHits(exon.minus.matches) == i]] %>% reduce()
-          bin.gene.matches = queryHits(bin.gene.minus.matches)[subjectHits(bin.gene.minus.matches) == i]
-          bin.exon.matches = bin.gene.matches[findOverlaps(query = bin.ranges[bin.gene.matches],
-                                                           subject = ranges(exon.id.temp),
-                                                           minoverlap = binning * 2/3) %>% countQueryHits()>0]
+          exon.id.temp = 
+            exon.temp.minus[queryHits(exon.minus.matches)[subjectHits(exon.minus.matches) == i]] %>% reduce()
+          
+          bin.gene.matches = 
+            queryHits(bin.gene.minus.matches)[subjectHits(bin.gene.minus.matches) == i]
+          
+          bin.exon.matches = 
+            bin.gene.matches[findOverlaps(query = bin.ranges[bin.gene.matches],
+                                          subject = ranges(exon.id.temp),
+                                          minoverlap = binning * 2/3) %>% countQueryHits()>0]
           bin.gene.matches = bin.gene.matches[bin.gene.matches < nrow(binned.temp.counts)]
           bin.exon.matches = bin.exon.matches[bin.exon.matches < nrow(binned.temp.counts)]
           if (countExon)
@@ -2024,13 +2182,15 @@ server <- shinyServer(function(input, output,session) {
           {
             if(length(setdiff(bin.gene.matches,bin.exon.matches)) == 1)
             {
-              chr.counts = rbind(chr.counts,
-                                 binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx+1]%>%t() )
+              chr.counts = 
+                rbind(chr.counts,
+                      binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx+1]%>%t() )
             } else
             {
-              chr.counts = rbind(chr.counts,
-                                 do.call(ifelse(RPK, 'colMeans', 'colSums'),
-                                         list(binned.temp.counts[setdiff(bin.gene.matches,bin.exon.matches), col_idx+1])) )
+              chr.counts = 
+                rbind(chr.counts,
+                      do.call(ifelse(RPK, 'colMeans', 'colSums'),
+                              list(binned.temp.counts[setdiff(bin.gene.matches,bin.exon.matches), col_idx+1])) )
             }
           }
         }
@@ -2077,7 +2237,10 @@ server <- shinyServer(function(input, output,session) {
     
     if (jaccardCutoff) 
     {
-      expr.array <<- seq(0, Reduce(mean,lapply(all.TU.gr.list, function(x) median(x[x$gene_type == 'ncRNA']$expr) )), by=1)
+      expr.array <<- seq(0, Reduce(mean,
+                                   lapply(all.TU.gr.list,
+                                          function(x) median(x[x$gene_type == 'ncRNA']$expr))),
+                         by = 1)
       jaccardScores <<- sapply(expr.array, .jaccardCalculation, all.TU.gr.list = all.TU.gr.list)
       cutoff.BC <<- expr.array[which.max(diff(jaccardScores))]
     } else 
@@ -2085,8 +2248,9 @@ server <- shinyServer(function(input, output,session) {
       cutoff.BC <<- 0
     }
     # cutoff uncertain ncRNAs
-    all.TU.gr.list = lapply(all.TU.gr.list, function(x) sort(c(x[x$type == 'protein_coding'],
-                                                               x[x$type == 'ncRNA' & x$expr > cutoff.BC])) )
+    all.TU.gr.list = lapply(all.TU.gr.list, 
+                            function(x) sort(c(x[x$type == 'protein_coding'],
+                                               x[x$type == 'ncRNA' & x$expr > cutoff.BC])) )
     return(all.TU.gr.list)
   }
   
@@ -2162,14 +2326,19 @@ server <- shinyServer(function(input, output,session) {
                                         RPK = F, countExon = T)
       if(T) ref.exon.count = readRDS('exon.count.RData')
       # use existed exon counts reference to normalize input L and T data set
-      match = findOverlaps(common.gene.gr,all.TU.gr.list[[1]][all.TU.gr.list[[1]]$type == 'protein_coding'],type='within',ignore.strand=F)
+      match = findOverlaps(common.gene.gr,
+                           all.TU.gr.list[[1]][all.TU.gr.list[[1]]$type == 'protein_coding'],
+                           type='within',ignore.strand=F)
+      
       gene_ids = all.TU.gr.list[[1]]$gene_id[all.TU.gr.list[[1]]$type == 'protein_coding'][queryHits(match)]
+      
       exon.count = exon.count[gene_ids%in%ref.exon.count$gene_id,]
       gene_ids = gene_ids[gene_ids%in%ref.exon.count$gene_id]
       ref.exon.count = ref.exon.count[match(gene_ids,ref.exon.count$gene_id),]
       
       size.factors = size_factor_cal(exon.count, RefExpr = ref.exon.count[,2])
-      flat.binned.counts.list = lapply(flat.binned.counts.list, function(x) sweep(x,2,rep(size.factors,each=2),'/') )
+      flat.binned.counts.list = lapply(flat.binned.counts.list,
+                                          function(x) sweep(x,2,rep(size.factors,each=2),'/') )
     }
     size.binned.counts.list = count.list.split(flat.binned.counts.list)
     if (doubled.list) size.binned.counts.list=size.binned.counts.list[1]
