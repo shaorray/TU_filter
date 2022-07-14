@@ -654,7 +654,7 @@ server <- shinyServer(function(input, output,session) {
       showNotification("Step2 Calling TU.", duration = 2000)
       for (bams in names(L.sample.list)) {
         strandFlipped <- F
-        TU.gr <- Bin_transcribed_TU(binned.RNA.counts.list = all.binned.counts.list[[bams]],
+        TU.gr <- bin_transcribed_TU(binned.RNA.counts.list = all.binned.counts.list[[bams]],
                                     Gene_input = Gene_input,
                                     strandFlipped = F,
                                     bam.files = L.sample.list[[bams]])
@@ -818,15 +818,15 @@ server <- shinyServer(function(input, output,session) {
     }
   )
   
-  ######################################################################################
+  # -------------------------------------------------------------------------------------#
   #
-  # Functions ---------------------------------------------------------------------
+  #                                     Functions                                        #
   #
-  ######################################################################################
+  # -------------------------------------------------------------------------------------#
   
-  ### part1 ------------------
+  ### part1 ---------------------------------------------------------------------
   # Convert bam files to the short-read genome binned list objects
-  bamBinCount <<- function(bam.file, paired.end,...){
+  bamBinCount <<- function(bam.file, paired.end, ...){
     # Args:
     # bam.file: single file path
     # paired.end: reads single or paired end
@@ -972,9 +972,9 @@ server <- shinyServer(function(input, output,session) {
   }
   
   # Convert bam files to the short-reads list objects
-  bam_bin_list <<- function(sample.list, FUN=bamBinCount, all.readPaired)
+  bam_bin_list <<- function(sample.list, FUN = bamBinCount, all.readPaired)
   {
-    all.binned.counts.list=list()
+    all.binned.counts.list = list()
     
     for (bams in seq_along(sample.list)) {
       start_time = Sys.time()
@@ -982,49 +982,52 @@ server <- shinyServer(function(input, output,session) {
       paired.end = all.readPaired[[bams]]
       
       chr.lengths = seqlengths(seqinfo(BamFile(bam.paths[1])))
-      chr.names <<- paste0('chr',c(1:100,'X','Y'))[paste0('chr',c(1:100,'X','Y')) %in% names(chr.lengths)]
+      bam_lvl_style = seqlevelsStyle(names(chr.lengths))
+      chr.names = paste0('chr', c(1:100,'X','Y'))
+      seqlevelsStyle(chr.names) = bam_lvl_style
+      chr.names <<- chr.names[chr.names %in% names(chr.lengths)]
       chr.lengths <<- chr.lengths[chr.names]
       
-      if (length(bam.paths)>1) {
+      if (length(bam.paths) > 1) {
         binned.RNA.counts.list = list()
-        for(more.bam in seq_along(bam.paths)) {
-          bam2.counts.list=FUN(bam.paths[more.bam], paired.end[more.bam])
+        for (more.bam in seq_along(bam.paths)) {
+          bam2.counts.list = FUN(bam.paths[more.bam], paired.end[more.bam])
           for (chr in chr.names) {
             binned.RNA.counts.list[[chr]] = cbind(binned.RNA.counts.list[[chr]],
                                                   bam2.counts.list[[chr]])
+            }
           }
-        }
-      } else {
-        binned.RNA.counts.list = FUN(bam.paths, paired.end)
-      }
+        } else {binned.RNA.counts.list = FUN(bam.paths, paired.end)}
+      seqlevelsStyle(names(binned.RNA.counts.list)) = "UCSC"
       
-      readsNum=lapply(binned.RNA.counts.list, sum)%>%unlist%>%sum
-      if(readsNum == 0) stop(paste('Error: 0 read in sample', bams))
+      readsNum = sum(unlist(lapply(binned.RNA.counts.list, sum)))
+      if (readsNum == 0) stop(paste('Error: 0 read in sample', bams))
       
-      bin.time=difftime(Sys.time(), start_time, units='mins') %>% round(2)
-      showNotification(paste("Processed ", sample.names[bams],':'), duration = 50)
-      showNotification(paste("Found", round(readsNum/1e+6,2),"million reads"), duration = 50)
+      bin.time = round(difftime(Sys.time(), start_time, units = 'mins'), 2)
+      showNotification(paste("Processed ", sample.names[bams], ':'), duration = 50)
+      showNotification(paste("Found", round(readsNum / 1e+6,2), "million reads"), duration = 50)
       showNotification(paste("Binning genome took", bin.time,"min"), duration = 50)
       
-      sample.num=length(bam.paths)
-      if(sample.num>1) {
-        binned.RNA.counts.list=lapply(binned.RNA.counts.list, function(x){
-          cbind(rowSums(x[,seq(1,sample.num*2-1,by = 2)]),
-                rowSums(x[,seq(2,sample.num*2,by = 2)]) )
+      sample.num = length(bam.paths)
+      if (sample.num > 1) {
+        binned.RNA.counts.list = lapply(binned.RNA.counts.list, function(x){
+          cbind(rowSums(x[, seq(1, sample.num * 2-1, by = 2)]),
+                rowSums(x[, seq(2, sample.num * 2, by = 2)]) )
         })
       }
-      all.binned.counts.list=c(all.binned.counts.list, list(binned.RNA.counts.list) )
+      all.binned.counts.list = c(all.binned.counts.list, list(binned.RNA.counts.list) )
     } # the end of bam batches loop
     gc()
-    names(all.binned.counts.list)=names(sample.list)
+    names(all.binned.counts.list) = names(sample.list)
     return(all.binned.counts.list)
   }
   
-  getAvgSignal_single <<- function(viterbi, obs, fct = mean) {
+  getAvgSignal_single <<- function(viterbi, obs, FUN = mean) 
+  {
     viterbi = unlist(viterbi)
     mySignals = do.call("rbind", obs)
     state2pos = tapply(1:nrow(mySignals), INDEX = viterbi, function(x) mySignals[x,])
-    state2val = lapply(state2pos, fct,na.rm=T)
+    state2val = lapply(state2pos, FUN, na.rm = TRUE)
     vit_means = do.call("rbind", state2val)
     vit_means
   }
@@ -1343,15 +1346,15 @@ server <- shinyServer(function(input, output,session) {
           }
           tu_subset$transcript_id = NA
           tu_subset[which.min(start(tu_subset))]$transcript_id = as.character(exon.boundary$transcript_id)[1]
-          mcols(exon.boundary)=mcols(tu_subset[which.min(start(tu_subset))])
-          reduced.exon.boundary=reduce(c(tu_return_subset_merged, exon.boundary))
+          mcols(exon.boundary) = mcols(tu_subset[which.min(start(tu_subset))])
+          reduced.exon.boundary = IRanges::reduce(c(tu_return_subset_merged, exon.boundary))
           excessive.tu=GRanges()
           ### get nc excessive part
           # disjoin exon with reduced tu
-          disjoin.exon.tu=disjoin(c(reduced.exon.boundary, exon.boundary))
+          disjoin.exon.tu = disjoin(c(reduced.exon.boundary, exon.boundary))
           # get exon excessive regions
-          excessive.tu=disjoin.exon.tu[ranges(disjoin.exon.tu)!=ranges(exon.boundary)]
-          excessive.tu=excessive.tu[width(excessive.tu)>binning] # discard flanking nc tu smaller than bin size, usually they are artifacts
+          excessive.tu = disjoin.exon.tu[ranges(disjoin.exon.tu) != ranges(exon.boundary)]
+          excessive.tu = excessive.tu[width(excessive.tu) > binning] # discard flanking nc tu smaller than bin size, usually they are artifacts
           ### add metadata
           exon.boundary$gene_id = g
           exon.boundary$type = ifelse(as.character(exons.gene_id$gene_type)[1] == 'protein_coding','protein_coding','ncRNA')
@@ -1544,35 +1547,29 @@ server <- shinyServer(function(input, output,session) {
   STAN_anno <<- function(binned.RNA.counts.list)
   {
     sample.num = ncol(binned.RNA.counts.list[[1]]) / 2
-    if (sample.num>1)
+    if (sample.num > 1)
     {
       binned.plus.merged = lapply(binned.RNA.counts.list, 
-                                  function(x) x[, seq(1,sample.num*2-1, by = 2)])
+                                  function(x) x[, seq(1, sample.num * 2 - 1, by = 2)])
       binned.minus.merged = lapply(binned.RNA.counts.list,
-                                   function(x) x[, seq(2,sample.num*2, by = 2)])
-    } else
-    {
+                                   function(x) x[, seq(2, sample.num * 2, by = 2)])
+    } else {
       binned.plus.merged = lapply(binned.RNA.counts.list,
-                                  function(x) matrix(x[,1], ncol = 1) )
+                                  function(x) matrix(x[, 1], ncol = 1) )
       binned.minus.merged = lapply(binned.RNA.counts.list,
-                                   function(x) matrix(x[,2], ncol = 1) )
+                                   function(x) matrix(x[, 2], ncol = 1) )
     }
     names(binned.plus.merged) = paste(names(binned.plus.merged), ".L", sep="")
     names(binned.minus.merged) = paste(names(binned.minus.merged), ".L", sep="")
     
-    split = do.call("rbind",strsplit(names(binned.plus.merged), "\\."))
-    chrs = unique(split[, 1])
+    chrs = unique(do.call("rbind", strsplit(names(binned.plus.merged), "\\."))[, 1])
     pilot.mm10.regions = GRanges(seqnames = chrs,
                                  ranges = IRanges(start = 1,
                                                   end = unique(sapply(binned.plus.merged,length)*binning)),
                                  strand = "*",
                                  name = chrs)
     
-    celltypes = lapply(names(binned.plus.merged),
-                       function(n)
-                       {
-                         grep(n, names(binned.plus.merged))
-                       })
+    celltypes = lapply(names(binned.plus.merged), function(n) grep(n, names(binned.plus.merged)))
     
     names(celltypes) = names(binned.plus.merged)
     sizeFactors.plus = getSizeFactors(binned.plus.merged, celltypes)
@@ -1603,7 +1600,7 @@ server <- shinyServer(function(input, output,session) {
       return(anno)
     }
     
-    TU_input = reduce(anno)
+    TU_input = IRanges::reduce(anno)
     
     # fill metadata--------
     TU_input$id = 1:length(TU_input)
@@ -1649,7 +1646,7 @@ server <- shinyServer(function(input, output,session) {
   }
   
   # call TU from bin counts --------------------------
-  Bin_transcribed_TU <<- function(binned.RNA.counts.list, Gene_input, bam.files, ...)
+  bin_transcribed_TU <<- function(binned.RNA.counts.list, Gene_input, bam.files, ...)
   {
     # this function wraps STAN HMM state calling and TU merging steps
     # args:
@@ -1657,7 +1654,7 @@ server <- shinyServer(function(input, output,session) {
     # Gene_input: gene reference
     
     # STAN calling --------------
-    TU_input <<- STAN_anno(binned.RNA.counts.list) %>% sort
+    TU_input <<- sort(STAN_anno(binned.RNA.counts.list))
     # reference prep -------------
     if (!exists('gene.gr'))
     {
@@ -1677,14 +1674,13 @@ server <- shinyServer(function(input, output,session) {
   {
     # this function will exclude some psudeogenes for avoiding gene embeding issue
     showNotification('Preparing minimal gene transcripts...')
-    chr.names = names(table(seqnames(TU_input)))[table(seqnames(TU_input)) > 0]
-    if (!'gene'%in%unique(Gene_input$type))
+    seqlevelsStyle(Gene_input) = "UCSC"
+    if (!'gene' %in% unique(Gene_input$type))
     {
       stop("Annotation reference does not contain any 'gene' feature.
              Please check 'type' column in the uploaded reference.")
-    } else
-    {
-      gene.gr = Gene_input[Gene_input$type == 'gene'  &Gene_input$gene_type %in% mergeFeatures]
+    } else {
+      gene.gr = Gene_input[Gene_input$type == 'gene' & Gene_input$gene_type %in% mergeFeatures]
       if ("gene_source" %in% colnames(mcols(gene.gr)))
       {
         if (any('havana' %in% tolower(gene.gr$gene_source))) 
@@ -1695,10 +1691,10 @@ server <- shinyServer(function(input, output,session) {
       {
         Gm.gene.gr = gene.gr[grepl('^Gm', gene.gr$gene_name)]
         gene.gr = c(gene.gr[!grepl('^Gm', gene.gr$gene_name)],
-                    Gm.gene.gr[findOverlaps(Gm.gene.gr, gene.gr) %>%
-                                 countQueryHits()<=1]) %>% sort
+                    Gm.gene.gr[countQueryHits(findOverlaps(Gm.gene.gr, gene.gr)) <= 1])
+        gene.gr = sort(gene.gr)
       }
-      gene.gr = gene.gr[findOverlaps(gene.gr, gene.gr, type='within') %>% countSubjectHits() <= 1]
+      gene.gr = gene.gr[countSubjectHits(findOverlaps(gene.gr, gene.gr, type = 'within')) <= 1]
       return(gene.gr)
     }
   }
@@ -1743,9 +1739,15 @@ server <- shinyServer(function(input, output,session) {
     if (T)
     {
       TU_input$type = 'ncRNA'
-      nc.TU.gr = TU_input[-min.cutoff(TU_input, gene.gr, ovCutoff=ovCutoff, annoCutoff=annoCutoff)[[1]]]
-      nc.TU.gr = nc.TU.gr[findOverlaps(query = nc.TU.gr,reduce(exon.TU.gr),type='within',ignore.strand=F)%>%countQueryHits() == 0] ###remove embedded genes
-      TU.gr = c(exon.TU.gr, nc.TU.gr) %>% sort
+      nc.TU.gr = TU_input[-min.cutoff(TU_input, gene.gr,
+                                      ovCutoff = ovCutoff, 
+                                      annoCutoff = annoCutoff)[[1]]]
+      
+      nc.TU.gr = nc.TU.gr[countQueryHits(findOverlaps(nc.TU.gr, 
+                                                      IRanges::reduce(exon.TU.gr),
+                                                      type='within', 
+                                                      ignore.strand = F)) == 0] ###remove embedded genes
+      TU.gr = sort(c(exon.TU.gr, nc.TU.gr)) 
       TU.gr$id = seq_along(TU.gr)
     }
     return(TU.gr)
@@ -1760,8 +1762,8 @@ server <- shinyServer(function(input, output,session) {
     current.TU.minus = current.TU.gr[strand(current.TU.gr) == '-']
     dup.ranges.plus = duplicated(ranges(current.TU.plus))
     dup.ranges.minus = duplicated(ranges(current.TU.minus))
-    dup.ranges = c(current.TU.plus[dup.ranges.plus], 
-                   current.TU.minus[dup.ranges.minus]) %>% reduce() # in case more than 2 duplicates
+    dup.ranges = IRanges::reduce(c(current.TU.plus[dup.ranges.plus], 
+                          current.TU.minus[dup.ranges.minus]) ) # in case more than 2 duplicates
     
     if (length(dup.ranges) > 0)
     {
@@ -1772,8 +1774,7 @@ server <- shinyServer(function(input, output,session) {
       unique.TU.gr = current.TU.gr[!current.TU.gr$gene_id %in% all.dup.ranges$gene_id]
       
       max.gene.TU.id = foreach(x = seq_along(dup.ranges), .combine = c) %dopar% {
-        temp.gene = current.ref[findOverlaps(query = dup.ranges[x], subject = current.ref) %>%
-                                  countSubjectHits() > 0]
+        temp.gene = current.ref[countSubjectHits(findOverlaps(query = dup.ranges[x], subject = current.ref)) > 0]
         # temp.TU=current.TU.gr[ranges(current.TU.gr) == ranges(dup.ranges[x])]
         intct_width = width(intersect(temp.gene, dup.ranges[x]))
         if (all(intct_width == intct_width[1])) {
@@ -1799,11 +1800,11 @@ server <- shinyServer(function(input, output,session) {
     
     chr.names = names(table(seqnames(TU_input)))[table(seqnames(TU_input))>0]
     # some library prep methods could have mate in pairs as the forward reads, check which strand has max gene coverage
-    all_matched = TU_input[min.cutoff(TU_input, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] %>% 
-      width() %>% sum()
+    all_matched =  
+      sum( width( TU_input[min.cutoff(TU_input, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] ) )
     TU_input_rev = TU_input; levels(strand(TU_input_rev)) = c("-", "+", "*")
-    all_matched_rev = TU_input_rev[min.cutoff(TU_input_rev, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] %>%
-      width() %>% sum()
+    all_matched_rev = 
+      sum( width( TU_input_rev[min.cutoff(TU_input_rev, gene.gr, ovCutoff=0L, annoCutoff=0L)[[1]]] ) )
     
     if (all_matched_rev > all_matched)
     {
@@ -1827,7 +1828,7 @@ server <- shinyServer(function(input, output,session) {
         all_matching_tus$gene_type = gene.gr$gene_type[all.cutoffIdx[[2]]]
         # remove duplicated gene overlapped ranges
         all_matching_tus = all_matching_tus[!duplicated(all.cutoffIdx[[1]])]
-        TU.gr = c(all_matching_tus, TU_input[-all.cutoffIdx[[1]]]) %>% sort
+        TU.gr = sort(c(all_matching_tus, TU_input[-all.cutoffIdx[[1]]])) 
       }
       
       TU.gr$location = TU.gr$type
@@ -1838,7 +1839,7 @@ server <- shinyServer(function(input, output,session) {
       
       our.genes = TU.gr[TU.gr$type == 'protein_coding']
       ref.gene = gene.gr[gene.gr$gene_type == 'protein_coding']
-      ref.gene = ref.gene[findOverlaps(ref.gene,TU.gr,ignore.strand=F) %>% countQueryHits()>0]
+      ref.gene = ref.gene[ countQueryHits(findOverlaps(ref.gene,TU.gr,ignore.strand=F) ) > 0]
       mcols(our.genes) = mcols(our.genes)[, c('gene_id','type')]
       mcols(ref.gene) = mcols(ref.gene)[, c('gene_id','type')]
       main.genes.gr = sort(c(our.genes, ref.gene[!ref.gene$gene_id %in% our.genes$gene_id]))
@@ -1878,11 +1879,10 @@ server <- shinyServer(function(input, output,session) {
       nc_reduce.gap = nc_reduce.gap[width(nc_reduce.gap) < 1500]
       unmappable.gr <<- import.input.ranges(unmappable,T)
       unmappable.gr = unmappable.gr[width(unmappable.gr) < 1000000] + binning # extend ranges by the average reads insert size
-      nc_reduce.gap = nc_reduce.gap[findOverlaps(query = unmappable.gr,
-                                                 subject = nc_reduce.gap, 
-                                                 type = 'any',
-                                                 ignore.strand=T) %>%
-                                      countSubjectHits()>0]
+      nc_reduce.gap = nc_reduce.gap[countSubjectHits(findOverlaps(query = unmappable.gr,
+                                                                  subject = nc_reduce.gap, 
+                                                                  type = 'any',
+                                                                  ignore.strand=T) ) > 0]
       
       ncRNAs.reduce.gap.Idx = findOverlaps(query = nc_reduce.gap + 1, 
                                            subject = ncRNAs.gr,
@@ -1893,15 +1893,15 @@ server <- shinyServer(function(input, output,session) {
                                  queryHits(ncRNAs.reduce.gap.Idx))
       ncRNA.reduce.gr = GRanges()
       ncRNA.reduce.gr = foreach(i=1:length(sp.ncRNA.reduce.ls),.combine = c) %dopar% {
-        temp.reduce.gr=sp.ncRNA.reduce.ls[[i]]
-        return.reduce.gr=temp.reduce.gr[1]
-        start(return.reduce.gr)=min(start(temp.reduce.gr))
-        end(return.reduce.gr)=max(end(temp.reduce.gr))
+        temp.reduce.gr = sp.ncRNA.reduce.ls[[i]]
+        return.reduce.gr = temp.reduce.gr[1]
+        start(return.reduce.gr) = min(start(temp.reduce.gr))
+        end(return.reduce.gr) = max(end(temp.reduce.gr))
         if (!is.null(return.reduce.gr$score)) 
           return.reduce.gr$score = mean(temp.reduce.gr$score)
         return(return.reduce.gr)
       }
-      ncRNAs.gr = reduce(c(ncRNA.reduce.gr, ncRNAs.nonreduce.gr))
+      ncRNAs.gr = IRanges::reduce(c(ncRNA.reduce.gr, ncRNAs.nonreduce.gr))
     } else
     {
       ncRNAs.gr = TU.gr[TU.gr$type == "ncRNA"]
@@ -1946,7 +1946,7 @@ server <- shinyServer(function(input, output,session) {
       mcols(coding.gr) = mcols(coding.gr)[, c('id','expr','gene_id','transcript_id',
                                               'exonOV','type','gene_type','location')]
       # write location
-      TU.gr = c(coding.gr, txLocation(ncRNAs.gr, main.genes.gr) ) %>% sort
+      TU.gr = sort(c(coding.gr, txLocation(ncRNAs.gr, main.genes.gr) ))
     }
     return(TU.gr)
   }
@@ -1956,8 +1956,7 @@ server <- shinyServer(function(input, output,session) {
   {
     # etract bin counts on the chromosome existing in all the samples
     binned.RNA.counts.list = list()
-    temp.chrs = lapply(all.binned.counts.list, 
-                       function(x) names(x)) %>% unlist() %>% table()
+    temp.chrs = table(unlist(lapply(all.binned.counts.list, function(x) names(x)) ) )
     temp.chrs = intersect(c(paste0('chr',1:100),'chrX','chrY'), 
                           names(temp.chrs)[temp.chrs == length(all.binned.counts.list)])
     for (chr in temp.chrs)
@@ -2114,7 +2113,7 @@ server <- shinyServer(function(input, output,session) {
         for (i in seq_along(gene.temp.plus))
         {
           exon.id.temp = 
-            exon.temp.plus[queryHits(exon.plus.matches)[subjectHits(exon.plus.matches) == i]] %>% reduce()
+            IRanges::reduce(exon.temp.plus[queryHits(exon.plus.matches)[subjectHits(exon.plus.matches) == i]])
           bin.gene.matches = 
             queryHits(bin.gene.plus.matches)[subjectHits(bin.gene.plus.matches) == i]
           bin.exon.matches = 
@@ -2155,7 +2154,7 @@ server <- shinyServer(function(input, output,session) {
         for (i in seq_along(gene.temp.minus))
         {
           exon.id.temp = 
-            exon.temp.minus[queryHits(exon.minus.matches)[subjectHits(exon.minus.matches) == i]] %>% reduce()
+            IRanges::reduce(exon.temp.minus[queryHits(exon.minus.matches)[subjectHits(exon.minus.matches) == i]])
           
           bin.gene.matches = 
             queryHits(bin.gene.minus.matches)[subjectHits(bin.gene.minus.matches) == i]
@@ -2213,7 +2212,7 @@ server <- shinyServer(function(input, output,session) {
     {
       ncRNA.list = lapply(all.TU.gr.list, function(x) x[x$expr>minBC & x$type == 'ncRNA'])
       common.ncRNA.gr = Common_gene(ncRNA.list)
-      all.ncRNA.gr = reduce(Reduce(c, ncRNA.list))
+      all.ncRNA.gr = IRanges::reduce(Reduce(c, ncRNA.list))
       jacc = length(common.ncRNA.gr) / length(all.ncRNA.gr)
       return(jacc)
     }
