@@ -43,71 +43,71 @@ ui <- dashboardPage(skin = "black",
                                   box(title = 'Submit',background = "teal", solidHeader = TRUE,width = 4,
                                       uiOutput('buttonsUI4'),
                                       uiOutput('buttonsUI2'),
-                                      collapsible = T, collapsed = FALSE),
+                                      collapsible = TRUE, collapsed = FALSE),
                                   
                                   box(title='Reference file',status = "info",solidHeader = TRUE,width = 4,
                                       shinyFilesButton("gene_ref", "Ensembl or GENCODE" ,multiple = F,
                                                        title = "Please select a reference file:",
                                                        buttonType = "default",class=NULL,tags$span(style="color:red", "*")),
                                       verbatimTextOutput('refInput'),br(),actionButton('load','Load'),
-                                      collapsible = T, collapsed = FALSE
+                                      collapsible = TRUE, collapsed = FALSE
                                   ),
                                   
                                   box(title = "Input bam files",status = "info",solidHeader = TRUE,width = 4,
                                       
-                                      shinyFilesButton("bamfiles1", "Sample files 1" ,multiple = T,
+                                      shinyFilesButton("bamfiles1", "Sample files 1", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default",class = NULL),
                                       verbatimTextOutput('filepaths1'),br(),
                                       
-                                      shinyFilesButton("bamfiles2", "Sample files 2" ,multiple = T,
+                                      shinyFilesButton("bamfiles2", "Sample files 2", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths2'),br(),
                                       
-                                      shinyFilesButton("bamfiles3", "Sample files 3" ,multiple = T,
+                                      shinyFilesButton("bamfiles3", "Sample files 3", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths3'),br(),
                                       
-                                      shinyFilesButton("bamfiles4", "Sample files 4" ,multiple = T,
+                                      shinyFilesButton("bamfiles4", "Sample files 4", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths4'),br(),
                                       
-                                      shinyFilesButton("bamfiles5", "Sample files 5" ,multiple = T,
+                                      shinyFilesButton("bamfiles5", "Sample files 5", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths5'),br(),
                                       
-                                      shinyFilesButton("bamfiles6", "Sample files 6" ,multiple = T,
+                                      shinyFilesButton("bamfiles6", "Sample files 6", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default",class = NULL),
                                       verbatimTextOutput('filepaths6'),br(),
                                       
-                                      shinyFilesButton("bamfiles7", "Sample files 7" ,multiple = T,
+                                      shinyFilesButton("bamfiles7", "Sample files 7", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths7'),br(),
                                       
-                                      shinyFilesButton("bamfiles8", "Sample files 8" ,multiple = T,
+                                      shinyFilesButton("bamfiles8", "Sample files 8", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths8'),br(),
                                       
-                                      shinyFilesButton("bamfiles9", "Sample files 9" ,multiple = T,
+                                      shinyFilesButton("bamfiles9", "Sample files 9", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths9'),br(),
                                       
-                                      shinyFilesButton("bamfiles10", "Sample files 10" ,multiple = T,
+                                      shinyFilesButton("bamfiles10", "Sample files 10" , multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths10'),br(),
-                                      collapsible = T, collapsed = FALSE
+                                      collapsible = TRUE, collapsed = FALSE
                                   ),
-                                  box(title = 'Location counts', plotOutput("counts_plot"),collapsible = T,
-                                      width = 8, collapsed = F,
+                                  box(title = 'Location counts', plotOutput("counts_plot"), collapsible = TRUE,
+                                      width = 8, collapsed = FALSE,
                                       background = "teal", solidHeader = TRUE #status = "warning",solidHeader = TRUE
                                   )
                                 )
@@ -170,7 +170,7 @@ ui <- dashboardPage(skin = "black",
                                                              TUs are removed.")
                                         ),
                                       
-                                      collapsible = T, collapsed = FALSE
+                                      collapsible = TRUE, collapsed = FALSE
                                   ),
                                   
                                   box(title='TU and Gene Cutoff', status = "warning",solidHeader = TRUE,
@@ -186,63 +186,63 @@ ui <- dashboardPage(skin = "black",
                                         shinyInput_label_embed(
                                           icon("question-circle") %>%
                                             bs_embed_tooltip(title = "Extremely long genes")
-                                        ),collapsible = T, collapsed = FALSE
+                                        ),collapsible = TRUE, collapsed = FALSE
                                   )
                                 )),
                         tabItem(tabName = "STAN",
                                 fluidRow(
-                                  box(title = "ChIP-seq bam files",status = "info",solidHeader = TRUE,width = 6,
+                                  box(title = "ChIP-seq bam files",status = "info",solidHeader = TRUE, width = 6,
                                       
-                                      shinyFilesButton("C_bamfiles1", "Total bam files 1" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles1", "Total bam files 1", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default",class = NULL),
                                       verbatimTextOutput('C.filepaths1'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles2", "Total bam files 2" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles2", "Total bam files 2", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths2'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles3", "Total bam files 3" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles3", "Total bam files 3", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths3'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles4", "Total bam files 4" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles4", "Total bam files 4", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths4'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles5", "Total bam files 5" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles5", "Total bam files 5", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths5'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles6", "Total bam files 6" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles6", "Total bam files 6", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths6'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles7", "Total bam files 7" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles7", "Total bam files 7" ,multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths7'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles8", "Total bam files 8" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles8", "Total bam files 8" ,multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths8'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles9", "Total bam files 9" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles9", "Total bam files 9" ,multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths9'),br(),
                                       
-                                      shinyFilesButton("C_bamfiles10", "Total bam files 10" ,multiple = T,
+                                      shinyFilesButton("C_bamfiles10", "Total bam files 10" ,multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('C.filepaths10'),br(),
-                                      collapsible = T, collapsed = FALSE
+                                      collapsible = TRUE, collapsed = FALSE
                                   )
                                 )
                         ),
@@ -259,13 +259,13 @@ ui <- dashboardPage(skin = "black",
                                   #     status = "primary",solidHeader = TRUE,collapsible = T, collapsed = FALSE),
                                   
                                   box(title = 'Plot',uiOutput('buttonsUI3'), status = "primary",solidHeader = TRUE,
-                                      collapsible = T, collapsed = FALSE),
+                                      collapsible = TRUE, collapsed = FALSE),
                                   
                                   box(title='Download', uiOutput('downloadUI'),status = "primary",solidHeader = TRUE,
-                                      collapsible = T, collapsed = FALSE),
+                                      collapsible = TRUE, collapsed = FALSE),
                                   
                                   box(title = "Number per class", tableOutput("table_output"),status = "primary",
-                                      solidHeader = TRUE,collapsible = T, collapsed = FALSE)
+                                      solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE)
                                 )
                         ),
                         tabItem(tabName = "help",
@@ -282,7 +282,7 @@ ui <- dashboardPage(skin = "black",
                                       p('Step 3: normalise TU expression if multiple samples are inputs, and cutoff lowly expressed ncRNAs'),
                                       br(),
                                       
-                                      img(src='flow.png',  width = 500),br(),
+                                      img(src = 'flow.png',  width = 500),br(),
                                       a(href="www.bioconductor.org/packages/release/bioc/html/STAN.html",
                                         h5("Bioconductor: STAN")),
                                       br(),
@@ -298,9 +298,9 @@ ui <- dashboardPage(skin = "black",
                                       p("Gene reference: each gene reference has the 'gene' and 'exon' features, and 'protein_coding'
                                         gene_type, e.g. GENCODE and ensembl. "),
                                       br(),
-                                      img(src='example.png',  width = 700),br(),
+                                      img(src = 'example.png',  width = 700),br(),
                                       width = 600,
-                                      collapsible = T
+                                      collapsible = TRUE
                                       
                                   ),
                                   box(title = "Annotation methods",status = "success",#solidHeader = TRUE,
@@ -322,7 +322,7 @@ ui <- dashboardPage(skin = "black",
                                       p('Non-coding RNA locations:'),
                                       img(src='abbre.png',  width = 700),br(),
                                       width = 600,
-                                      collapsible = T
+                                      collapsible = TRUE
                                       
                                   ),
                                   box(title = "Parameter setting", status = "success",#solidHeader = TRUE,
@@ -346,7 +346,7 @@ ui <- dashboardPage(skin = "black",
                                       p('To remove extraordinarily wide reference genes that covers many other genes.'),
                                       br(),
                                       width = 700,
-                                      collapsible = T, collapsed = FALSE
+                                      collapsible = TRUE, collapsed = FALSE
                                       
                                   ),
                                   
@@ -356,7 +356,7 @@ ui <- dashboardPage(skin = "black",
                                       br(),
                                       p('Contact rui.shao@scilifelab.se if there is any question.'),
                                       width = 700,
-                                      collapsible = T, collapsed = FALSE)
+                                      collapsible = TRUE, collapsed = FALSE)
                                 )
                         )
                       )
@@ -370,20 +370,20 @@ ui <- dashboardPage(skin = "black",
 # Define server logic required to draw a histogram
 server <- shinyServer(function(input, output,session) {
   # variables to control the sequence of processes
-  controlVar <<- reactiveValues(bamReady=FALSE,
-                                fileReady1=FALSE,
+  controlVar <<- reactiveValues(bamReady = FALSE,
+                                fileReady1 = FALSE,
                                 fileReady2 = FALSE,
-                                exprcutoff=FALSE,
-                                positionReady=FALSE,
-                                plotReady=FALSE,
+                                exprcutoff = FALSE,
+                                positionReady = FALSE,
+                                plotReady = FALSE,
                                 tableReady = FALSE,
-                                heatmapReady=FALSE,
-                                heatmapChoice=FALSE,
-                                submit_trigger=FALSE,
-                                nc_reduced=FALSE,
-                                nc_given=FALSE,
-                                gene_given=FALSE,
-                                gene_merged=FALSE)
+                                heatmapReady = FALSE,
+                                heatmapChoice = FALSE,
+                                submit_trigger = FALSE,
+                                nc_reduced = FALSE,
+                                nc_given = FALSE,
+                                gene_given = FALSE,
+                                gene_merged = FALSE)
   # prepare bam inputs
   volumes <- getVolumes()
   # labeled RNA
@@ -454,7 +454,7 @@ server <- shinyServer(function(input, output,session) {
   
   observeEvent(input$tx_file, {
     controlVar$fileReady2 <- FALSE
-    TU_input <<- import.input.ranges(input$tx_file,T)
+    TU_input <<- import.input.ranges(input$tx_file, TRUE)
     controlVar$fileReady2 <- TRUE
   })
   
@@ -517,7 +517,7 @@ server <- shinyServer(function(input, output,session) {
     if (controlVar$fileReady1  & (controlVar$fileReady2|!is.null(input$bamfiles1)))
       div(
         selectInput(inputId = "stan_mode",
-                    multiple = T,
+                    multiple = TRUE,
                     HTML(paste("GenoSTAN model")),
                     choices = c("NegativeBinomial"="NB", "PoissonLogNormal"="Poilog",
                                 "ZINegativeBinomial"="ZINB","IndependentGaussian"="Gauss"),
@@ -528,7 +528,7 @@ server <- shinyServer(function(input, output,session) {
                     choices = c("Skip joining TU"="skip","Join TUs" = "tu","Join exons" = "exon"),
                     width = '90%',selected = 'skip'),
         
-        collapsible = T, collapsed = FALSE,
+        collapsible = TRUE, collapsed = FALSE,
         # numericInput(inputId = "cutoff_quantile", label = "Cutoff Expression Quantile", value = 0.1, min = 0, max = 5,step = 0.01,width = "80%"),
         actionButton('go','Run')
       )
@@ -538,7 +538,7 @@ server <- shinyServer(function(input, output,session) {
     if (controlVar$fileReady1)
       div(
         selectInput(inputId = "merge_features",
-                    multiple = T, selected="protein_coding",
+                    multiple = TRUE, selected="protein_coding",
                     HTML(paste("Multi-exon transcript types",tags$span(style="color:red", "*"))),
                     unique(Gene_input$gene_type),width = '90%')
       )
@@ -551,34 +551,34 @@ server <- shinyServer(function(input, output,session) {
     #initialize controlVars
     
     #conditional controls
-    if (!exists('all.binned.counts.list'))controlVar$bamReady<<-F #won't count bam file twice
-    controlVar$exprcutoff<<-F
+    if (!exists('all.binned.counts.list'))controlVar$bamReady <<- FALSE #won't count bam file twice
+    controlVar$exprcutoff <<- FALSE
     
     if (!exists('previous_mode')) {
-      controlVar$stanset<<-F
+      controlVar$stanset <<- FALSE
     } else if (previous_mode!=input$stan_mode) {
-      controlVar$stanset<<-F
-    } else {controlVar$stanset<<-T}
+      controlVar$stanset <<- FALSE
+    } else {controlVar$stanset <<- TRUE}
     
     if(!exists('previous_cutfactor')){
-      controlVar$expcutoff<<-F
+      controlVar$expcutoff<<- FALSE
     } else if (previous_cutfactor!=c(minSizeFactor,minRPKM)) {
-      controlVar$expcutoff<<-F
-    } else {controlVar$expcutoff<<-T}
+      controlVar$expcutoff <<- FALSE
+    } else {controlVar$expcutoff<<-TRUE}
     
-    if (!exists('anno.gr')) controlVar$TUgrReady<<-F
+    if (!exists('anno.gr')) controlVar$TUgrReady <<- FALSE
     if (exists('anno.gr') & exists('TU_input')) rm(TU_input)
     if (!exists('merge_method')) {
-      controlVar$gene_given <<- F #gene_merged won't re-initialize if nothing changes
+      controlVar$gene_given <<- FALSE #gene_merged won't re-initialize if nothing changes
     } else if (mergeMethod!=input$mergeMethod) {
-      controlVar$gene_given<<-F}
+      controlVar$gene_given <<- FALSE}
     
     # renewable controls
-    controlVar$nc_reduced <<- F
-    controlVar$nc_given <<- F
-    controlVar$location <<- F
-    controlVar$positionReady <<- F
-    controlVar$tableReady <<- F
+    controlVar$nc_reduced <<- FALSE
+    controlVar$nc_given <<- FALSE
+    controlVar$location <<- FALSE
+    controlVar$positionReady <<- FALSE
+    controlVar$tableReady <<- FALSE
     
     # set params--------
     if (T) {
@@ -587,7 +587,7 @@ server <- shinyServer(function(input, output,session) {
       ncores <<- ifelse(detectCores() > nChrs, 20, detectCores() - 1)
       registerDoParallel(cores = ncores)
       
-      outCoverage <<-F
+      outCoverage <<- FALSE
       mergeFeatures <<- input$merge_features
       fit_method <<- input$stan_mode
       nStates <<- 2
@@ -626,8 +626,8 @@ server <- shinyServer(function(input, output,session) {
     
     # read bam files (or load transcript intervals)
     if (!is.null(txInput)) {
-      TU_input <- import.input.ranges(txInput,is.datapath = T)
-      chr.names <<- paste0('chr',c(1:100,'X','Y'))[paste0('chr',c(1:100,'X','Y'))%in%seqlevels(TU_input)]
+      TU_input <- import.input.ranges(txInput,is.datapath = TRUE)
+      chr.names <<- paste0('chr', c(1:100,'X','Y'))[paste0('chr', c(1:100,'X','Y')) %in% seqlevels(TU_input)]
       gene.gr <<- genePrep(Gene_input, TU_input)
       TU.gr <<- TU_prep(Gene_input, gene.gr, TU_input)
     } else if (length(L.sample.list)>0) 
@@ -646,24 +646,24 @@ server <- shinyServer(function(input, output,session) {
       
       all.readPaired <<- invisible(lapply(L.sample.list, function(x) sapply(x, testPairedEndBam)) )
       
-      all.strandFlipped <<- setNames(rep(F, length(L.sample.list)), names(L.sample.list)) # initiate
+      all.strandFlipped <<- setNames(rep(FALSE, length(L.sample.list)), names(L.sample.list)) # initiate
       
       all.binned.counts.list <<- bam_bin_list(L.sample.list, FUN=bamBinCount, all.readPaired)
       
       ### Part2: calling TU -----------------------------------------------------------------------------
       showNotification("Step2 Calling TU.", duration = 2000)
       for (bams in names(L.sample.list)) {
-        strandFlipped <- F
+        strandFlipped <- FALSE
         TU.gr <- bin_transcribed_TU(binned.RNA.counts.list = all.binned.counts.list[[bams]],
                                     Gene_input = Gene_input,
-                                    strandFlipped = F,
+                                    strandFlipped = FALSE,
                                     bam.files = L.sample.list[[bams]])
         # strandFlipped from function "TU_prep"; if any experiment prepared first-in-pair read on reverse strand, then "strandFlipped" is TRUE
         if (strandFlipped)
         {
           all.binned.counts.list[[bams]] <- lapply(all.binned.counts.list[[bams]],
                                                    function(x) x[, rev(seq_len(ncol(x)))])
-          all.strandFlipped[bams] <- T
+          all.strandFlipped[bams] <- TRUE
         }
         all.TU.gr.list <- c(all.TU.gr.list, list(TU.gr))
       }
@@ -724,7 +724,7 @@ server <- shinyServer(function(input, output,session) {
   })
   
   output$counts_plot <- renderPlot({
-    controlVar$plotReady<<-FALSE
+    controlVar$plotReady <<- FALSE
     if(controlVar$tableReady){
       new.table=as.data.frame(location.table[[1]])
       new.table$Var1=factor(new.table$Var1, 
@@ -836,10 +836,10 @@ server <- shinyServer(function(input, output,session) {
     
     if (paired.end) {
       sbw = c('pos', 'qwidth','strand','rname', 'mrnm', 'mpos', 'isize')
-      flag=scanBamFlag(isFirstMateRead = paired.end, isSecondaryAlignment=F)
+      flag=scanBamFlag(isFirstMateRead = paired.end, isSecondaryAlignment = FALSE)
     } else {
       sbw = c('pos', 'qwidth','strand','rname')
-      flag=scanBamFlag(isSecondaryAlignment=F,
+      flag=scanBamFlag(isSecondaryAlignment = FALSE,
                        isFirstMateRead = paired.end)
     }
     param = ScanBamParam(what = sbw,flag = flag)
@@ -849,10 +849,10 @@ server <- shinyServer(function(input, output,session) {
     
     if (paired.end) {
       chr.index = with(srg[[1]], rname == mrnm & !is.na(isize))
-      chr.index[is.na(chr.index)] = F
+      chr.index[is.na(chr.index)] = FALSE
       # remove reads with large insertion
       size.index = with(srg[[1]], xor(strand == '-', isize>0) & abs(isize) < 1000 ) 
-      size.index[is.na(size.index)] = F
+      size.index[is.na(size.index)] = FALSE
       
       all.index = all.index & size.index  & chr.index
     }
@@ -873,8 +873,8 @@ server <- shinyServer(function(input, output,session) {
         }
         # count bins
         br = seq(0, chr.lengths[chr]+binning, by=binning)
-        freq.mat = cbind(hist(mid.pos.plus, breaks=br, include.lowest=TRUE, plot=FALSE)$count,
-                         hist(mid.pos.minus, breaks=br, include.lowest=TRUE, plot=FALSE)$count)
+        freq.mat = cbind(hist(mid.pos.plus, breaks=br, include.lowest = TRUE, plot = FALSE)$count,
+                         hist(mid.pos.minus, breaks=br, include.lowest = TRUE, plot = FALSE)$count)
       } else {
         if (paired.end) {
           cov.plus = with(chr.srg.plus,
@@ -929,14 +929,14 @@ server <- shinyServer(function(input, output,session) {
     param = ScanBamParam(what = sbw,flag = flag)
     srg = scanBam(bam.file, param=param, index = bam.index)
     
-    all.index = rep(T,length(srg[[1]]$pos))
+    all.index = rep(TRUE,length(srg[[1]]$pos))
     if (paired.end) {
       chr.index = with(srg[[1]], rname == mrnm )
-      chr.index[is.na(chr.index)] = F
+      chr.index[is.na(chr.index)] = FALSE
       all.index = all.index & chr.index
     }
     size.index = with(srg[[1]], xor(strand == '-', isize>0) & abs(isize)<1000 ) #remove reads with large insertion
-    size.index[is.na(size.index)] = F
+    size.index[is.na(size.index)] = FALSE
     all.index = all.index & size.index
     
     srg = lapply(srg[[1]],function(x) x=x[all.index])
@@ -1079,8 +1079,8 @@ server <- shinyServer(function(input, output,session) {
       sbw = c('pos', 'qwidth', 'mapq', 'strand', 'rname',
               'mrnm', 'mpos', 'isize')
       sbp = ScanBamParam(what=sbw, which=object.gr,
-                         flag=scanBamFlag(isUnmappedQuery=F,
-                                          isSecondaryAlignment =F,
+                         flag=scanBamFlag(isUnmappedQuery = FALSE,
+                                          isSecondaryAlignment = FALSE,
                                           isFirstMateRead = is.paired.end))#use first in pair reads for coverage
       
       # Scan bam file to retrieve short reads.
@@ -1216,7 +1216,7 @@ server <- shinyServer(function(input, output,session) {
     
     cutoff_matching_tus = all_matching_tus[findOverlaps(query = anno_matching_tus, 
                                                         subject = all_matching_tus, 
-                                                        type = "equal",ignore.strand=FALSE) %>%
+                                                        type = "equal",ignore.strand = FALSE) %>%
                                              countSubjectHits() == 0]
     
     if (length(anno_matching_tus)>0) {
@@ -1237,7 +1237,7 @@ server <- shinyServer(function(input, output,session) {
         # tu_subset_1flank=sort(tu_subset_1flank)
         tu_return_subset = c()
         
-        mtch = findOverlaps(tu_subset_1flank, exons.gene_id,type = 'any',ignore.strand=FALSE)
+        mtch = findOverlaps(tu_subset_1flank, exons.gene_id,type = 'any',ignore.strand = FALSE)
         tu_subset$exonOV[queryHits(mtch)] = TRUE
         
         true.inds = which(tu_subset$exonOV == TRUE)
@@ -1304,7 +1304,7 @@ server <- shinyServer(function(input, output,session) {
     cutoff_matching_tus=all_matching_tus[findOverlaps(query = anno_matching_tus,
                                                       subject = all_matching_tus,
                                                       type = "equal",
-                                                      ignore.strand=FALSE) %>%
+                                                      ignore.strand = FALSE) %>%
                                            countSubjectHits() == 0]
     
     if(length(anno_matching_tus)>0){
@@ -1326,7 +1326,7 @@ server <- shinyServer(function(input, output,session) {
         tu_1.Idx = ifelse(as.character(strand(tu_subset[1])) == '+',1,length(tu_subset))
         tu_subset_1flank[tu_1.Idx] = tu_subset_1flank[tu_1.Idx]+1000
         
-        mtch = findOverlaps(tu_subset_1flank, exons.gene_id,type = 'any',ignore.strand=FALSE)
+        mtch = findOverlaps(tu_subset_1flank, exons.gene_id,type = 'any', ignore.strand = FALSE)
         tu_subset$exonOV[queryHits(mtch)] = TRUE
         
         true.inds = which(tu_subset$exonOV == TRUE)
@@ -1384,7 +1384,7 @@ server <- shinyServer(function(input, output,session) {
       }
       
       nc.gene.disjoin.idx = which(exon_matching_tus.merged$gene_type == 'ncRNA' & 
-                                    exon_matching_tus.merged$exonOV == T)
+                                    exon_matching_tus.merged$exonOV == TRUE)
       ### reduce non-coding tus redundantly overlap multiple genes
       if (length(nc.gene.disjoin.idx) > 0)
       {
@@ -1397,7 +1397,7 @@ server <- shinyServer(function(input, output,session) {
         mid.nc.tu = mid.nc.tu[width(mid.nc.tu)>binning] #### discard middle nc tu if they are too small
         if (length(mid.nc.tu)>0)
         {
-          mid.matches = findOverlaps(mid.nc.tu, tus,ignore.strand = F, type = "within")
+          mid.matches = findOverlaps(mid.nc.tu, tus,ignore.strand = FALSE, type = "within")
           mcols(mid.nc.tu) = suppressWarnings(mcols(tus[subjectHits(mid.matches)]))
           mid.nc.tu$exonOV = F
           mid.nc.tu$gene_type = "ncRNA"
@@ -1457,23 +1457,23 @@ server <- shinyServer(function(input, output,session) {
   txLocation <<- function(ncRNAs.gr, main.genes.gr)
   {
     within.sense = findOverlaps(ncRNAs.gr, main.genes.gr,  
-                                type = 'within',ignore.strand=FALSE) ###add type = 'within'
+                                type = 'within',ignore.strand = FALSE) ###add type = 'within'
     ncRNAs_antisense = ncRNAs.gr
     levels(strand(ncRNAs_antisense)) = c("-","+","*")
     within.antisense = findOverlaps(ncRNAs_antisense, main.genes.gr, 
-                                    type = 'any', ignore.strand=FALSE) ###add type = 'any'
+                                    type = 'any', ignore.strand = FALSE) ###add type = 'any'
     
     if(length(queryHits(within.antisense))>0) 
       ncRNAs.gr$location[unique(queryHits(within.antisense))] = "antisense"
     if(length(queryHits(within.sense))>0) 
       ncRNAs.gr$location[unique(queryHits(within.sense))] = "gene_sense"
-    if (T)
+    if (TRUE)
     {
       ncRNAs.TSS = promoters(ncRNAs.gr, upstream=1, downstream=0)
       gene.TSS = promoters(main.genes.gr, upstream = 1, downstream = 0)
       levels(strand(ncRNAs.TSS)) = c("-","+","*")
       upstream.antisense = findOverlaps(ncRNAs.TSS, gene.TSS, 
-                                        ignore.strand=FALSE, maxgap = TSS_len)
+                                        ignore.strand = FALSE, maxgap = TSS_len)
       
       plus = which(strand(gene.TSS[subjectHits(upstream.antisense)]) == "+")
       minus = which(strand(gene.TSS[subjectHits(upstream.antisense)]) == "-")
@@ -1501,7 +1501,7 @@ server <- shinyServer(function(input, output,session) {
     }
     if (mergeMethod == 'exon')
     {
-      downstream.regions = flank(main.genes.gr, width=TTS_len, start=FALSE) + 2 ###+2 to disjoin nc parts
+      downstream.regions = flank(main.genes.gr, width=TTS_len, start = FALSE) + 2 ###+2 to disjoin nc parts
       ncRNAs.TSS = promoters(ncRNAs.gr, upstream=1, downstream=0)
       downstream = findOverlaps(ncRNAs.TSS, downstream.regions)
       
@@ -1518,7 +1518,7 @@ server <- shinyServer(function(input, output,session) {
     }
     
     ncRNAs.TTS=flank(ncRNAs.gr,width=1,start=F)
-    downstream.regions = flank(main.genes.gr, width=TTS_len, start=FALSE)
+    downstream.regions = flank(main.genes.gr, width=TTS_len, start = FALSE)
     levels(strand(ncRNAs.TTS)) = c("-","+","*")
     downstream.antisense = findOverlaps(ncRNAs.TTS, downstream.regions)
     if (length(queryHits(downstream.antisense))>0)
@@ -1625,7 +1625,7 @@ server <- shinyServer(function(input, output,session) {
     {
       DTASeq_data_labeled = lapply(DTASeq_data_labeled, function(x)
         apply(log(x+sqrt(x^2+1)), 2, runningMean, 2))
-      hmm.data = initHMM(DTASeq_data_labeled, nStates, "IndependentGaussian", sharedCov=TRUE)
+      hmm.data = initHMM(DTASeq_data_labeled, nStates, "IndependentGaussian", sharedCov = TRUE)
     } else if(fit_method == "NB")
     {
       hmm.data = initHMM(DTASeq_data_labeled, nStates=nStates, "NegativeBinomial",sizeFactors=sizeFactors)
@@ -1809,7 +1809,7 @@ server <- shinyServer(function(input, output,session) {
     if (all_matched_rev > all_matched)
     {
       TU_input = TU_input_rev
-      strandFlipped <<- T
+      strandFlipped <<- TRUE
     }
     
     if ( is.null(txInput) )
@@ -1856,8 +1856,8 @@ server <- shinyServer(function(input, output,session) {
       TU.gr$gene_id = TU.gr$transcript_id = NA
       TU.gr$gene_id[queryHits(matches)] = main.genes.gr$gene_id[subjectHits(matches)]
       TU.gr$transcript_id[queryHits(matches)] = main.genes.gr$transcript_id[subjectHits(matches)]
-      TU.gr$exonOV = F
-      TU.gr$exonOV[countQueryHits(matches)>0] = T
+      TU.gr$exonOV = FALSE
+      TU.gr$exonOV[countQueryHits(matches)>0] = TRUE
       TU.gr$gene_type = TU.gr$location = TU.gr$type
     } # the end of TU preprocessing
     
@@ -1865,7 +1865,7 @@ server <- shinyServer(function(input, output,session) {
     if( !is.null(mask_list) )
     {
       inList = mask_list
-      mask_list = read.table(inList$datapath, header = F)
+      mask_list = read.table(inList$datapath, header = FALSE)
       rm.idx = mcols(main.genes.gr)$gene_id %in% unlist(mask_list)
       main.genes.gr = main.genes.gr[!rm.idx,]
     }
@@ -1877,17 +1877,17 @@ server <- shinyServer(function(input, output,session) {
       # get gaps
       nc_reduce.gap = gaps(ncRNAs.gr)
       nc_reduce.gap = nc_reduce.gap[width(nc_reduce.gap) < 1500]
-      unmappable.gr <<- import.input.ranges(unmappable,T)
+      unmappable.gr <<- import.input.ranges(unmappable, TRUE)
       unmappable.gr = unmappable.gr[width(unmappable.gr) < 1000000] + binning # extend ranges by the average reads insert size
       nc_reduce.gap = nc_reduce.gap[countSubjectHits(findOverlaps(query = unmappable.gr,
                                                                   subject = nc_reduce.gap, 
                                                                   type = 'any',
-                                                                  ignore.strand=T) ) > 0]
+                                                                  ignore.strand = TRUE) ) > 0]
       
       ncRNAs.reduce.gap.Idx = findOverlaps(query = nc_reduce.gap + 1, 
                                            subject = ncRNAs.gr,
                                            type = 'any',
-                                           ignore.strand=F)
+                                           ignore.strand = FALSE)
       ncRNAs.nonreduce.gr = ncRNAs.gr[countSubjectHits(ncRNAs.reduce.gap.Idx) == 0]
       sp.ncRNA.reduce.ls = split(ncRNAs.gr[subjectHits(ncRNAs.reduce.gap.Idx)], 
                                  queryHits(ncRNAs.reduce.gap.Idx))
@@ -1934,7 +1934,7 @@ server <- shinyServer(function(input, output,session) {
       ncRNAs.gr$gene_type = "ncRNA"
       nc.ov.idx = findOverlaps(query = ncRNAs.gr, 
                                subject = Gene_input[Gene_input$gene_type!='protein_coding'],
-                               ignore.strand=F,minoverlap = binning)
+                               ignore.strand = FALSE, minoverlap = binning)
       ncRNAs.gr$gene_type = base::replace(ncRNAs.gr$gene_type, 
                                           queryHits(nc.ov.idx), 
                                           Gene_input[Gene_input$gene_type != 'protein_coding']$gene_type[subjectHits(nc.ov.idx)])
@@ -1997,7 +1997,7 @@ server <- shinyServer(function(input, output,session) {
   }
   
   #expr cutoff ----------------------------------
-  TU_count_cal <<- function(binned.RNA.counts.list, TU.genes.gr, chr.lengths, RPK = F)
+  TU_count_cal <<- function(binned.RNA.counts.list, TU.genes.gr, chr.lengths, RPK = FALSE)
   {
     # count TU gene reads from binned list
     # Args:
@@ -2126,8 +2126,8 @@ server <- shinyServer(function(input, output,session) {
           {
             if (length(bin.exon.matches) == 1)
             {
-              chr.counts = rbind(chr.counts,
-                                 binned.temp.counts[bin.exon.matches, col_idx] %>% t )
+              chr.counts = t(rbind(chr.counts,
+                                 binned.temp.counts[bin.exon.matches, col_idx]) )
             } else
             {
               chr.counts = rbind(chr.counts,
@@ -2139,8 +2139,8 @@ server <- shinyServer(function(input, output,session) {
             if (length(setdiff(bin.gene.matches, bin.exon.matches)) == 1)
             {
               chr.counts = 
-                rbind(chr.counts,
-                      binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx] %>% t )
+                t(rbind(chr.counts,
+                      binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx]) )
             } else
             {
               chr.counts = 
@@ -2274,7 +2274,7 @@ server <- shinyServer(function(input, output,session) {
     exon.counts = ExonIntron_count_cal(flat.binned.cov.list, 
                                        Gene_input = Gene_input, 
                                        TU.genes.gr = common.gene.gr,
-                                       chr.lengths, RPK = F, countExon = T)
+                                       chr.lengths, RPK = FALSE, countExon = TRUE)
     size_factor_cal(exon.counts, RefExpr = NULL)
   }
   
@@ -2313,21 +2313,21 @@ server <- shinyServer(function(input, output,session) {
     if (ncol(flat.binned.counts.list[[1]]) == 2)
     {
       flat.binned.counts.list=lapply(flat.binned.counts.list, function(x) cbind(x,x))
-      doubled.list = T
+      doubled.list = TRUE
     } else {
-      doubled.list = F
+      doubled.list = FALSE
       common.gene.gr = Common_gene(lapply(all.TU.gr.list,function(x) x[x$type == 'protein_coding']))
       # size factor from binned list
       exon.count = ExonIntron_count_cal(flat.binned.counts.list,
                                         Gene_input,
                                         common.gene.gr,
                                         chr.lengths,
-                                        RPK = F, countExon = T)
-      if(T) ref.exon.count = readRDS('exon.count.RData')
+                                        RPK = F, countExon = TRUE)
+      if(TRUE) ref.exon.count = readRDS('exon.count.RData')
       # use existed exon counts reference to normalize input L and T data set
       match = findOverlaps(common.gene.gr,
                            all.TU.gr.list[[1]][all.TU.gr.list[[1]]$type == 'protein_coding'],
-                           type='within',ignore.strand=F)
+                           type='within', ignore.strand = FALSE)
       
       gene_ids = all.TU.gr.list[[1]]$gene_id[all.TU.gr.list[[1]]$type == 'protein_coding'][queryHits(match)]
       
@@ -2337,7 +2337,7 @@ server <- shinyServer(function(input, output,session) {
       
       size.factors = size_factor_cal(exon.count, RefExpr = ref.exon.count[,2])
       flat.binned.counts.list = lapply(flat.binned.counts.list,
-                                          function(x) sweep(x,2,rep(size.factors,each=2),'/') )
+                                          function(x) sweep(x,2,rep(size.factors, each = 2), '/') )
     }
     size.binned.counts.list = count.list.split(flat.binned.counts.list)
     if (doubled.list) size.binned.counts.list=size.binned.counts.list[1]
@@ -2351,17 +2351,17 @@ server <- shinyServer(function(input, output,session) {
     # RefExpr: if return relative size factors comparing to reference counts
     # return the size factors of gene counts
     gene.counts = gene.counts[!apply(gene.counts,1,function(x) any(is.na(x)) ) & rowSums(gene.counts)>0,]
-    if(!is.null(RefExpr))
+    if (!is.null(RefExpr))
     {
       gene.counts = cbind(RefExpr, gene.counts)
       # geometric mean
-      geoMeans = apply(gene.counts, 1, function(x) exp(sum(log(x[x > 0]), na.rm=T) / length(x)) )
+      geoMeans = apply(gene.counts, 1, function(x) exp(sum(log(x[x > 0]), na.rm = TRUE) / length(x)) )
       # quotients list to median (size factor)
       quoMedian = apply(sweep(gene.counts, 1, geoMeans, '/'), 2, median)
       return(quoMedian[-1] / quoMedian[1])
     } else
     {
-      geoMeans = apply(gene.counts, 1, function(x) exp(sum(log(x[x > 0]), na.rm=T) / length(x)) )
+      geoMeans = apply(gene.counts, 1, function(x) exp(sum(log(x[x > 0]), na.rm = TRUE) / length(x)) )
       return(apply(sweep(gene.counts, 1, geoMeans,'/'), 2, median))
     }
   }
