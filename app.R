@@ -688,9 +688,9 @@ server <- shinyServer(function(input, output,session) {
     
     if (controlVar$bamReady) {
       showNotification("Step3 Expression cutoff ...", duration = 2000)
-      all.TU.expr.list <<- Cutoff_expression(L.sample.list, 
-                                             all.TU.gr.list, 
-                                             all.binned.counts.list)
+      
+      all.TU.expr.list <<- cutoff_expression(L.sample.list, all.TU.gr.list, all.binned.counts.list)
+      
       removeNotification("Step3 Expression cutoff.")
     }
     
@@ -985,7 +985,7 @@ server <- shinyServer(function(input, output,session) {
       bam_lvl_style = seqlevelsStyle(names(chr.lengths))
       chr.names = paste0('chr', c(1:100,'X','Y'))
       seqlevelsStyle(chr.names) = bam_lvl_style
-      chr.names <<- chr.names[chr.names %in% names(chr.lengths)]
+      chr.names <<- intersect(chr.names, names(chr.lengths))
       chr.lengths <<- chr.lengths[chr.names]
       
       if (length(bam.paths) > 1) {
@@ -1570,8 +1570,10 @@ server <- shinyServer(function(input, output,session) {
                                  name = chrs)
     
     celltypes = lapply(names(binned.plus.merged), function(n) grep(n, names(binned.plus.merged)))
+    names(celltypes) = names(binned.plus.merged)
     
-    getSizeFactors = function (obs, celltypes) 
+    
+    .getSizeFactors = function(obs, celltypes) 
     {
       myAvg = apply(t(sapply(celltypes,
                              function(x) apply(do.call("rbind", obs[x]), 2, sum)
@@ -1591,9 +1593,8 @@ server <- shinyServer(function(input, output,session) {
       sizeFactors
     }
     
-    names(celltypes) = names(binned.plus.merged)
-    sizeFactors.plus = getSizeFactors(binned.plus.merged, celltypes)
-    sizeFactors.minus = getSizeFactors(binned.minus.merged, celltypes)
+    sizeFactors.plus = .getSizeFactors(binned.plus.merged, celltypes)
+    sizeFactors.minus = .getSizeFactors(binned.minus.merged, celltypes)
     
     # add background counts
     binned.plus = lapply(binned.plus.merged, function(x) x + 1)
@@ -2000,12 +2001,12 @@ server <- shinyServer(function(input, output,session) {
   }
   
   #gene intersection------------------------------
-  Common_gene <<-function(TU.list)
+  get_common_gene <<- function(TU.list)
   {
     # TU.genes=GRanges()
-    for(i in seq_along(TU.list) )
+    for (i in seq_along(TU.list) )
     {
-      if(i == 1)
+      if (i == 1)
       {
         TU.genes=sort(TU.list[[i]])
       } else
@@ -2039,7 +2040,7 @@ server <- shinyServer(function(input, output,session) {
       gene.temp.plus = TU.genes.gr[seqnames(TU.genes.gr) == chr & strand(TU.genes.gr) == '+']
       gene.temp.minus = TU.genes.gr[seqnames(TU.genes.gr) == chr & strand(TU.genes.gr) == '-']
       
-      bin.ranges = IRanges(start =  seq(1,chr.lengths[chr],by=binning), width = binning)
+      bin.ranges = IRanges(start = seq(1, chr.lengths[chr], by = binning), width = binning)
       plus.matches = findOverlaps(query = bin.ranges,
                                   subject = ranges(gene.temp.plus),type='any',minoverlap = binning/2)
       minus.matches = findOverlaps(query = bin.ranges,
@@ -2080,18 +2081,21 @@ server <- shinyServer(function(input, output,session) {
     }
   }
   
-  ExonIntron_count_cal <<- function(binned.RNA.counts.list,
-                                    Gene_input, TU.genes.gr,
-                                    chr.lengths, RPK = F, 
-                                    countExon = T, ...)
+  cal_exon_intron_count <<- function(binned.RNA.counts.list,
+                                    Gene_input, 
+                                    TU.genes.gr,
+                                    chr.lengths,
+                                    RPK = FALSE, 
+                                    countExon = TRUE, ...)
   {
     # count TU reads from binned list
     # Args:
     # binned.RNA.counts.list
     # Gene_input: gene reference
     # TU.genes.gr: sum counts in bin inside subject ranges
-    # chr.lengths: chromosome length for rebiulding bins
+    # chr.lengths: chromosome length for rebuilding bins
     # RPK: logical, if returns reads per Kb (RPK)
+    
     temp.sample.num = ncol(binned.RNA.counts.list[[1]]) / 2
     if (temp.sample.num == 1)
     {
@@ -2099,7 +2103,7 @@ server <- shinyServer(function(input, output,session) {
       temp.sample.num = ncol(binned.RNA.counts.list[[1]]) / 2
     }
     
-    chrs = seqnames(TU.genes.gr) %>% as.character %>% table %>% names
+    chrs = as.character(unique(seqnames(TU.genes.gr)))
     foreach(chr = chrs, .combine = rbind) %dopar%
       {
         binned.temp.counts = binned.RNA.counts.list[[chr]]
@@ -2137,32 +2141,29 @@ server <- shinyServer(function(input, output,session) {
           bin.gene.matches = 
             queryHits(bin.gene.plus.matches)[subjectHits(bin.gene.plus.matches) == i]
           bin.exon.matches = 
-            bin.gene.matches[findOverlaps(query = bin.ranges[bin.gene.matches],
-                                          subject = ranges(exon.id.temp),
-                                          minoverlap = binning * 2/3) %>% countQueryHits()>0]
+            bin.gene.matches[countQueryHits(findOverlaps(query = bin.ranges[bin.gene.matches],
+                                                         subject = ranges(exon.id.temp),
+                                                         minoverlap = binning * 2/3) ) > 0]
           bin.gene.matches = bin.gene.matches[bin.gene.matches < nrow(binned.temp.counts)]
           bin.exon.matches = bin.exon.matches[bin.exon.matches < nrow(binned.temp.counts)]
           if (countExon)
           {
             if (length(bin.exon.matches) == 1)
             {
-              chr.counts = t(rbind(chr.counts,
-                                 binned.temp.counts[bin.exon.matches, col_idx]) )
-            } else
-            {
+              chr.counts = rbind(chr.counts,
+                                 t(binned.temp.counts[bin.exon.matches, col_idx]) )
+            } else {
               chr.counts = rbind(chr.counts,
                                  do.call(ifelse(RPK, 'colMeans', 'colSums'), 
                                          list(binned.temp.counts[bin.exon.matches, col_idx])) )
             }
-          } else
-          {
+          } else {
             if (length(setdiff(bin.gene.matches, bin.exon.matches)) == 1)
             {
               chr.counts = 
-                t(rbind(chr.counts,
-                      binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx]) )
-            } else
-            {
+                rbind(chr.counts,
+                      t(binned.temp.counts[setdiff(bin.gene.matches, bin.exon.matches), col_idx]) )
+            } else {
               chr.counts = 
                 rbind(chr.counts,
                       do.call(ifelse(RPK, 'colMeans', 'colSums'),
@@ -2223,7 +2224,7 @@ server <- shinyServer(function(input, output,session) {
   
   ### part3 ------------------
   # count exon coverage 
-  Cutoff_expression <<- function(L.sample.list, all.TU.gr.list, all.binned.counts.list)
+  cutoff_expression <<- function(L.sample.list, all.TU.gr.list, all.binned.counts.list)
   {
     # inputs: bin counts and annotated TUs of all samples
     # outputs: bin counts and RPK of TUs after normalizing by exon counts across all samples
@@ -2231,7 +2232,7 @@ server <- shinyServer(function(input, output,session) {
     .jaccardCalculation = function(minBC, all.TU.gr.list)
     {
       ncRNA.list = lapply(all.TU.gr.list, function(x) x[x$expr>minBC & x$type == 'ncRNA'])
-      common.ncRNA.gr = Common_gene(ncRNA.list)
+      common.ncRNA.gr = get_common_gene(ncRNA.list)
       all.ncRNA.gr = IRanges::reduce(Reduce(c, ncRNA.list))
       jacc = length(common.ncRNA.gr) / length(all.ncRNA.gr)
       return(jacc)
@@ -2239,7 +2240,7 @@ server <- shinyServer(function(input, output,session) {
     
     # count all reads coverage, include spliced and non-spliced reads
     size.factors <<- sampleSizeFactors(all.TU.gr.list = all.TU.gr.list,
-                                       all.binned.list = all.binned.counts.list,
+                                       all.binned.counts.list = all.binned.counts.list,
                                        Gene_input, L.sample.list)
     
     flat.binned.cov.list = count.list.combine(all.binned.counts.list)
@@ -2273,10 +2274,10 @@ server <- shinyServer(function(input, output,session) {
     return(all.TU.gr.list)
   }
   
-  sampleSizeFactors <<- function(all.TU.gr.list, all.binned.list, Gene_input, L.sample.list)
+  sampleSizeFactors <<- function(all.TU.gr.list, all.binned.counts.list, Gene_input, L.sample.list)
   {
     .tempId = function(x) sapply(x, function(y) unlist(strsplit(y,'\\.'))[1] ) # remove gene version suffix
-    common.gene.gr = Common_gene(lapply(all.TU.gr.list, function(x) x[x$type == 'protein_coding']))
+    common.gene.gr = get_common_gene(lapply(all.TU.gr.list, function(x) x[x$type == 'protein_coding']))
     # size factor from binned list
     Gene_exon = Gene_input[ Gene_input$type == 'exon' & Gene_input$gene_type == "protein_coding"]
     Input_ids = unique(Gene_exon$gene_id)
@@ -2285,16 +2286,18 @@ server <- shinyServer(function(input, output,session) {
     {
       for (bam in which(all.strandFlipped))
       {
-        all.binned.list[[bam]] = lapply(all.binned.list[[bam]],
+        all.binned.counts.list[[bam]] = lapply(all.binned.counts.list[[bam]],
                                         function(x) x[, rev(seq_len(ncol(x)))])
       }
     }
     gc()
-    flat.binned.cov.list = count.list.combine(all.binned.list)
-    exon.counts = ExonIntron_count_cal(flat.binned.cov.list, 
-                                       Gene_input = Gene_input, 
-                                       TU.genes.gr = common.gene.gr,
-                                       chr.lengths, RPK = FALSE, countExon = TRUE)
+    flat.binned.cov.list = count.list.combine(all.binned.counts.list)
+    exon.counts = cal_exon_intron_count(binned.RNA.counts.list = flat.binned.cov.list, 
+                                        Gene_input = Gene_input, 
+                                        TU.genes.gr = common.gene.gr,
+                                        chr.lengths,
+                                        RPK = FALSE, 
+                                        countExon = TRUE)
     size_factor_cal(exon.counts, RefExpr = NULL)
   }
   
@@ -2327,42 +2330,6 @@ server <- shinyServer(function(input, output,session) {
     return(transcriptAnno)
   }
   
-  Cov_norm <<- function(all.binned.counts.list, all.TU.gr.list, ref.cov)
-  {
-    flat.binned.counts.list = count.list.combine(all.binned.counts.list)
-    if (ncol(flat.binned.counts.list[[1]]) == 2)
-    {
-      flat.binned.counts.list=lapply(flat.binned.counts.list, function(x) cbind(x,x))
-      doubled.list = TRUE
-    } else {
-      doubled.list = FALSE
-      common.gene.gr = Common_gene(lapply(all.TU.gr.list,function(x) x[x$type == 'protein_coding']))
-      # size factor from binned list
-      exon.count = ExonIntron_count_cal(flat.binned.counts.list,
-                                        Gene_input,
-                                        common.gene.gr,
-                                        chr.lengths,
-                                        RPK = F, countExon = TRUE)
-      if(TRUE) ref.exon.count = readRDS('exon.count.RData')
-      # use existed exon counts reference to normalize input L and T data set
-      match = findOverlaps(common.gene.gr,
-                           all.TU.gr.list[[1]][all.TU.gr.list[[1]]$type == 'protein_coding'],
-                           type='within', ignore.strand = FALSE)
-      
-      gene_ids = all.TU.gr.list[[1]]$gene_id[all.TU.gr.list[[1]]$type == 'protein_coding'][queryHits(match)]
-      
-      exon.count = exon.count[gene_ids%in%ref.exon.count$gene_id,]
-      gene_ids = gene_ids[gene_ids%in%ref.exon.count$gene_id]
-      ref.exon.count = ref.exon.count[match(gene_ids,ref.exon.count$gene_id),]
-      
-      size.factors = size_factor_cal(exon.count, RefExpr = ref.exon.count[,2])
-      flat.binned.counts.list = lapply(flat.binned.counts.list,
-                                          function(x) sweep(x,2,rep(size.factors, each = 2), '/') )
-    }
-    size.binned.counts.list = count.list.split(flat.binned.counts.list)
-    if (doubled.list) size.binned.counts.list=size.binned.counts.list[1]
-    return(size.binned.counts.list)
-  }
   # size.factor----------------------------------
   size_factor_cal <<- function(gene.counts, RefExpr=NULL)
   {
