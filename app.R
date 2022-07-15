@@ -1571,6 +1571,26 @@ server <- shinyServer(function(input, output,session) {
     
     celltypes = lapply(names(binned.plus.merged), function(n) grep(n, names(binned.plus.merged)))
     
+    getSizeFactors = function (obs, celltypes) 
+    {
+      myAvg = apply(t(sapply(celltypes,
+                             function(x) apply(do.call("rbind", obs[x]), 2, sum)
+                             )),
+                    2, mean)
+      sizeFactors = matrix(NA, nrow = length(obs), ncol = ncol(obs[[1]]))
+      rownames(sizeFactors) = sapply(names(celltypes),
+                                     function(x) rep(x, length(celltypes[[x]]))
+                                     )
+      colnames(sizeFactors) = colnames(obs[[1]])
+      for (cell in 1:length(celltypes)) {
+        for (currDim in 1:ncol(sizeFactors)) {
+          sizeFactors[celltypes[[cell]], currDim] =
+            myAvg[currDim] / sum(do.call("rbind", obs[celltypes[[cell]]])[, currDim])
+        }
+      }
+      sizeFactors
+    }
+    
     names(celltypes) = names(binned.plus.merged)
     sizeFactors.plus = getSizeFactors(binned.plus.merged, celltypes)
     sizeFactors.minus = getSizeFactors(binned.minus.merged, celltypes)
