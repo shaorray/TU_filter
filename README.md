@@ -7,7 +7,7 @@ Transcription unit (TU) annotation tool for nascent RNA-Seq analysis.
 Usage:
   - transcribed genomic regions (e.g. non-coding intergenic RNAs)
   - multiple transcriptomes comparison (e.g. GRO-seq vs PRO-seq) 
-  - alternative to HOMMER's [GRO-seq analysis](http://homer.ucsd.edu/homer/ngs/groseq/groseq.html), with mRNA TU merging.
+  - alternative to HOMMER's [GRO-seq analysis](http://homer.ucsd.edu/homer/ngs/groseq/groseq.html), with an optional mRNA TU merging step (recommended).
 
 Inputs:
   1. gene reference (GENCODE or ensembl)
@@ -17,7 +17,7 @@ Output:
   - gff3 files of TU intervals (in a zipped folder)
       - with columns: expression, gene id, transript id, exon overlap, gene type, relative location to gene. 
 
-Non-coding TUs will named according to their relative location to the neighbored genes.
+Non-coding TUs will be named according to their relative locations to the neighbored genes.
 
 <img src="fig/example.png" width="100%">
 
