@@ -453,7 +453,7 @@ server <- shinyServer(function(input, output,session) {
     if(length(ref.path)>0)
     {
       showNotification("Loading reference ...", duration = 30)
-      Gene_input<<-import.input.ranges(ref.path,F)
+      Gene_input <<- import.input.ranges(ref.path, FALSE)
       
       if(!is.null(Gene_input$gene_biotype))
       {
@@ -528,13 +528,14 @@ server <- shinyServer(function(input, output,session) {
     if (controlVar$fileReady1)
       div(
         selectInput(inputId = "merge_features",
-                    multiple = TRUE, selected="protein_coding",
+                    multiple = TRUE, selected = "protein_coding",
                     HTML(paste("Multi-exon transcript types",tags$span(style="color:red", "*"))),
                     unique(Gene_input$gene_type),width = '90%')
       )
   })
   
-  #Event go----------------------------------------------------------------------
+  # Event go ----------------------------------------------------------------------
+  
   ### Part1: binning and counting
   
   observeEvent(input$go, {
@@ -570,36 +571,36 @@ server <- shinyServer(function(input, output,session) {
     controlVar$positionReady <<- FALSE
     controlVar$tableReady <<- FALSE
     
-    # set params--------
-    if (T) {
-      binning <<- input$binning.size
-      nChrs <<-length(seqlevels(Gene_input))
+    # --------------------------------------- set parameters ------------------------------------------
+    if (TRUE) {
+      binning <<- input$binning.size          # default 200
+      nChrs <<- length(seqlevels(Gene_input))
       ncores <<- ifelse(detectCores() > nChrs, 20, detectCores() - 1)
       registerDoParallel(cores = ncores)
       
       outCoverage <<- FALSE
-      mergeFeatures <<- input$merge_features
-      fit_method <<- input$stan_mode
+      mergeFeatures <<- input$merge_features  # "protein_coding" or additional multi-exon transcript type, e.g. lincRNA
+      fit_method <<- input$stan_mode          # default "Poilog"
       nStates <<- 2
-      mergeMethod <<- input$mergeMethod
+      mergeMethod <<- input$mergeMethod       # by "exon" or "tu"
       if (is.null(input$merging_TU)) {
-        ovCutoff <<-0
-        annoCutoff <<-0
+        ovCutoff <<- 0
+        annoCutoff <<- 0
       }
-      txInput <<- input$tx_file
-      precBound <<- input$precBound
+      txInput <<- input$tx_file               # optional
+      precBound <<- input$precBound           # optional
       
-      TSS_len <<- input$L_TSS
-      Promoter_len <<- input$L_Promoter
-      TTS_len <<- input$L_TTS
+      TSS_len <<- input$L_TSS                 # default 1000
+      Promoter_len <<- input$L_Promoter       # default 1000
+      TTS_len <<- input$L_TTS                 # default 1000
       
-      jaccardCutoff <<- input$jaccardCutoff
+      jaccardCutoff <<- input$jaccardCutoff   # default FALSE
       
-      if (is.null(input$mask_list)) {
+      if (is.null(input$mask_list)) {         # default NULL
         mask_list <<- NULL
       } else { mask_list <<- input$mask_list}
       
-      if (is.null(input$unmappable)) {
+      if (is.null(input$unmappable)) {        # default NULL
         unmappable <<- NULL
       } else { unmappable <<- input$unmappable }
     }
@@ -620,8 +621,7 @@ server <- shinyServer(function(input, output,session) {
       chr.names <<- paste0('chr', c(1:100,'X','Y'))[paste0('chr', c(1:100,'X','Y')) %in% seqlevels(TU_input)]
       gene.gr <<- gene_prep(Gene_input, TU_input)
       TU.gr <<- TU_prep(Gene_input, gene.gr, TU_input)
-    } else if (length(L.sample.list)>0) 
-    {
+    } else if (length(L.sample.list)>0) {
       start_time = Sys.time()
       sample.names <<- lapply(L.sample.list, function(x){
         strsplit(tail(unlist(strsplit(x[1],'\\/')),1),'\\.bam')%>%unlist()%>%head(1)
@@ -641,6 +641,7 @@ server <- shinyServer(function(input, output,session) {
       all.binned.counts.list <<- bam_bin_list(L.sample.list, FUN=bamBinCount, all.readPaired)
       
       ### Part2: calling TU -----------------------------------------------------------------------------
+                                          
       showNotification("Step2 Calling TU.", duration = 2000)
       for (bams in names(L.sample.list)) {
         strandFlipped <- FALSE
@@ -688,7 +689,10 @@ server <- shinyServer(function(input, output,session) {
     showNotification("Done! [^_^]",duration = 2000)
     registerDoSEQ()
   })
-  # The end of annotation
+  # -------------------------------------------- The end of annotation ---------------------------------------------
+          
+          
+          
   
   # prepare output ----------------------------------------------------------------------
   observeEvent(input$go, {
@@ -725,7 +729,7 @@ server <- shinyServer(function(input, output,session) {
         new.table <- as.data.frame(location.table[[i]])
         colnames(new.table) <- c("Location", "Number")
         new.table$Location = factor(new.table$Location, 
-                                    levels = new.table$Location[order(new.table$Number, decreasing = T)])
+                                    levels = new.table$Location[order(new.table$Number, decreasing = TRUE)])
         
         g <- ggplot(new.table, aes(x = Location, y = Number, fill = Location)) +
           geom_bar(stat = 'identity', width = 0.8) +
@@ -950,7 +954,7 @@ server <- shinyServer(function(input, output,session) {
     
     if (paired.end) {
       sbw = c('pos', 'qwidth','strand','rname', 'mrnm', 'mpos', 'isize')
-      flag=scanBamFlag(isFirstMateRead = paired.end, isSecondaryAlignment=F)
+      flag=scanBamFlag(isFirstMateRead = paired.end, isSecondaryAlignment = FALSE)
     } else {
       sbw = c('pos', 'qwidth','strand','rname')
       flag = scanBamFlag(isSecondaryAlignment = FALSE,
@@ -1528,6 +1532,7 @@ server <- shinyServer(function(input, output,session) {
       if (length(prompt) > 0) 
         ncRNAs.gr$location[queryHits(upstream.antisense)[prompt]] = "uaRNA"
     }
+    
     if (mergeMethod == 'exon')
     {
       downstream.regions = flank(main.genes.gr, width=TTS_len, start = FALSE) + 2 ###+2 to disjoin nc parts
@@ -1540,33 +1545,34 @@ server <- shinyServer(function(input, output,session) {
       }
       # add usRNA and daRNA
       upstream.regions = promoters(main.genes.gr, upstream=Promoter_len, downstream=0) + 2 ###+2 to disjoin nc parts
-      ncRNAs.TTS = flank(ncRNAs.gr,width=1,start=F)
+      ncRNAs.TTS = flank(ncRNAs.gr, width = 1, start = FALSE)
       upstream.sense = findOverlaps(ncRNAs.TTS, upstream.regions)
       if (length(queryHits(upstream.sense))>0) 
         ncRNAs.gr$location[unique(queryHits(upstream.sense))] = "usRNA"
     }
     
-    ncRNAs.TTS=flank(ncRNAs.gr,width=1,start=F)
+    ncRNAs.TTS=flank(ncRNAs.gr, width = 1, start = FALSE)
     downstream.regions = flank(main.genes.gr, width=TTS_len, start = FALSE)
     levels(strand(ncRNAs.TTS)) = c("-","+","*")
     downstream.antisense = findOverlaps(ncRNAs.TTS, downstream.regions)
-    if (length(queryHits(downstream.antisense))>0)
+    
+    if (length(queryHits(downstream.antisense)) > 0)
     {
       ncRNAs.gr$location[unique(queryHits(downstream.antisense))] = "daRNA"
     }
     
-    if (T)
+    if (TRUE)
     {
       # add usRNA and dsRNA
       upstream.regions = promoters(main.genes.gr, upstream=Promoter_len, downstream=0)
-      ncRNAs.TTS = flank(ncRNAs.gr,width=1,start=F)
+      ncRNAs.TTS = flank(ncRNAs.gr, width = 1, start = FALSE)
       upstream.sense = findOverlaps(ncRNAs.TTS, upstream.regions)
       if (length(queryHits(upstream.sense))>0) 
         ncRNAs.gr$location[unique(queryHits(upstream.sense))] = "usRNA"
       
-      ncRNAs.TSS = promoters(ncRNAs.gr, upstream=1, downstream=0)
+      ncRNAs.TSS = promoters(ncRNAs.gr, upstream = 1, downstream = 0)
       downstream = findOverlaps(ncRNAs.TSS, downstream.regions)
-      if (length(queryHits(downstream))>0) 
+      if (length(queryHits(downstream)) > 0) 
         ncRNAs.gr$location[unique(queryHits(downstream))] = "dsRNA"
     }
     return(ncRNAs.gr)
@@ -1786,7 +1792,7 @@ server <- shinyServer(function(input, output,session) {
     exons = sp.exon.gr[[i]]
     transcripts = sp.transcript.gr[[i]]
     
-    if (T)
+    if (TRUE)
     {
       TU_input$type = 'ncRNA'
       nc.TU.gr = TU_input[-get_min_cutoff(TU_input, gene.gr,
@@ -1796,7 +1802,7 @@ server <- shinyServer(function(input, output,session) {
       nc.TU.gr = nc.TU.gr[countQueryHits(findOverlaps(nc.TU.gr, 
                                                       IRanges::reduce(exon.TU.gr),
                                                       type='within', 
-                                                      ignore.strand = F)) == 0] ###remove embedded genes
+                                                      ignore.strand = FALSE)) == 0] ###remove embedded genes
       TU.gr = sort(c(exon.TU.gr, nc.TU.gr)) 
       TU.gr$id = seq_along(TU.gr)
     }
@@ -1889,7 +1895,7 @@ server <- shinyServer(function(input, output,session) {
       
       our.genes = TU.gr[TU.gr$type == 'protein_coding']
       ref.gene = gene.gr[gene.gr$gene_type == 'protein_coding']
-      ref.gene = ref.gene[ countQueryHits(findOverlaps(ref.gene,TU.gr,ignore.strand=F) ) > 0]
+      ref.gene = ref.gene[ countQueryHits(findOverlaps(ref.gene, TU.gr, ignore.strand = FALSE) ) > 0]
       mcols(our.genes) = mcols(our.genes)[, c('gene_id','type')]
       mcols(ref.gene) = mcols(ref.gene)[, c('gene_id','type')]
       main.genes.gr = sort(c(our.genes, ref.gene[!ref.gene$gene_id %in% our.genes$gene_id]))
@@ -1898,7 +1904,7 @@ server <- shinyServer(function(input, output,session) {
       
       main.genes.gr = sort(gene.gr[gene.gr$gene_type == 'protein_coding'])
       TU.gr = TU_input
-      matches = findOverlaps(query = TU_input, subject = main.genes.gr, ignore.strand=F)
+      matches = findOverlaps(query = TU_input, subject = main.genes.gr, ignore.strand = FALSE)
       TU.gr$type = 'ncRNA'
       TU.gr$type[countQueryHits(matches)>0] = 'protein_coding'
       TU.gr$id = seq_along(TU.gr)
@@ -1973,7 +1979,7 @@ server <- shinyServer(function(input, output,session) {
       # give old id to reduced ncRNA
       nc.ov.idx = findOverlaps(query = ncRNAs.gr, 
                                subject = TU.gr[TU.gr$type == "ncRNA"],
-                               ignore.strand = F)
+                               ignore.strand = FALSE)
       ncRNAs.gr$id = base::replace(ncRNAs.gr$id, queryHits(nc.ov.idx),
                                    TU.gr[TU.gr$type == "ncRNA"]$id[subjectHits(nc.ov.idx)])
       # ncRNAs.gr$expr=base::replace(ncRNAs.gr$expr,queryHits(nc.ov.idx),TU.gr[TU.gr$type == "ncRNA"]$expr[subjectHits(nc.ov.idx)])
