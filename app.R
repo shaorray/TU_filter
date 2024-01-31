@@ -11,7 +11,7 @@ pacman::p_load(shiny, shinyjs, shinydashboard, bsplus, shinythemes, shinyFiles,
                dplyr, S4Vectors,
                Rsamtools, rtracklayer,
                IRanges, GenomicRanges, GenomeInfoDb, GenomicAlignments,
-               STAN,
+               #STAN,
                foreach, doParallel,
                ggplot2, cowplot)
 
@@ -751,42 +751,60 @@ server <- shinyServer(function(input, output,session) {
   output$downloadUI <- renderUI({
     if (controlVar$tableReady)
       div(
-        downloadButton('downloadTUAnno', 'TU input Anno <.gtf>'),
-        downloadButton('downloadTUAnnoFiles', 'Bam input Annos <.zip>'),
-        downloadButton("downloadReport", "Generate report <.txt>")
+        textInput("write_gff_path", "Export to:", value = "~/Downloads"),
+        downloadButton("downloadReport", "Save TU anno and parameter log.")
       )
   })
   
-  output$downloadTUAnno <- downloadHandler(
-    filename = function() { paste0('TU_filter_annotation_', Sys.Date(), ".gtf") },
-    
-    content = function(out_file) {
-      export.gff3(object = TU.gr, con = out_file)
-    }
-  )
+  # output$downloadTUAnno <- downloadHandler(
+  #   filename = function() { paste0('TU_filter_annotation_', Sys.Date(), ".gtf") },
+  #   
+  #   content = function(out_file) {
+  #     export.gff3(object = TU.gr, con = out_file)
+  #   }
+  # )
   
-  output$downloadTUAnnoFiles <- downloadHandler(
-    
-    filename = function() { paste0('TU_filter_annotation_', Sys.Date(), ".zip") },
-    
-    content = function(out_file) {
-      
-      owd <- setwd(tempdir())
-      on.exit(setwd(owd))
-      files <- NULL
-      for (i in seq_along(all.TU.expr.list)) {
-        file_name <- file.path(tempdir(), paste0('TU_filter_', sample.names[[i]], ".gff3"))
-        export.gff3(all.TU.expr.list[[i]], con = file_name)
-        files <- c(files, file_name)
-      }
-      zip(zipfile = out_file, files = files)
-    }
-  )
+  # output$downloadTUAnnoFiles <- downloadHandler(
+  #   
+  #   filename = function() { paste0('TU_filter_annotation_', Sys.Date(), ".zip") },
+  #   
+  #   content = function(out_file) {
+  #     
+  #     owd <- setwd(tempdir())
+  #     on.exit(setwd(owd))
+  #     files <- NULL
+  #     for (i in seq_along(all.TU.expr.list)) {
+  #       file_name <- file.path(tempdir(), paste0('TU_filter_', sample.names[[i]], ".gff3"))
+  #       export.gff3(all.TU.expr.list[[i]], con = file_name)
+  #       files <- c(files, file_name)
+  #     }
+  #     zip(zipfile = "TU_anno", files = files)
+  #   }
+  # )
   
   output$downloadReport <- downloadHandler(
     
-    filename = paste0("TU annotation report ", Sys.Date(), ".txt"), 
+    filename = paste0("TU annotation report ", Sys.Date(), ".log"), 
     content = function(file) {
+      
+      # download TU annotation
+      if (!is.null(txInput)) {
+        out_file <- paste0(input$write_gff_path, 
+                           "/TU_filter_anno_", 
+                           gsub("(.*)\\..*$", "\\1", txInput[[1]]),
+                           ".gtf")
+        export.gff3(object = TU.gr, con = out_file)
+      } else {
+        for (i in seq_along(all.TU.expr.list)) {
+          file_name <- paste0(input$write_gff_path, 
+                              '/TU_filter_anno_',
+                              sample.names[[i]], 
+                              ".gff3")
+          export.gff3(all.TU.expr.list[[i]], con = file_name)
+        }
+      }
+      
+      
       
       file.create("tmp_report.txt")
       temp_report = file.path(tempdir(), "tmp_report.txt")
