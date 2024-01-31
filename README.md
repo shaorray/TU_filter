@@ -1,5 +1,16 @@
 Welcome to this R shiny app!
 
+---
+
+Update (2024 Jan 31)
+
+Bioconductor package [`STAN`](https://bioconductor.riken.jp/packages/3.14/bioc/html/STAN.html) local installation is avaliable with 'STAN.zip' (genoSTAN 2.24.0): 
+```
+install.packages("YOUR_PATH/STAN", repo = NULL, type = "source")
+```
+
+---
+
 <img src="fig/flow.png" width="60%">
 
 Transcription unit (TU) annotation tool for nascent RNA-Seq analysis. 
