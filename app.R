@@ -11,7 +11,7 @@ pacman::p_load(shiny, shinyjs, shinydashboard, bsplus, shinythemes, shinyFiles,
                dplyr, S4Vectors,
                Rsamtools, rtracklayer,
                IRanges, GenomicRanges, GenomeInfoDb, GenomicAlignments,
-               #STAN,
+               STAN,
                foreach, doParallel,
                ggplot2, cowplot)
 
@@ -55,52 +55,52 @@ ui <- dashboardPage(skin = "black",
                                   
                                   box(title = "Input bam files",status = "info",solidHeader = TRUE,width = 4,
                                       
-                                      shinyFilesButton("bamfiles1", "Sample files 1", multiple = TRUE,
+                                      shinyFilesButton("bamfiles1", "Sample 1, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default",class = NULL),
                                       verbatimTextOutput('filepaths1'),br(),
                                       
-                                      shinyFilesButton("bamfiles2", "Sample files 2", multiple = TRUE,
+                                      shinyFilesButton("bamfiles2", "Sample 2, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths2'),br(),
                                       
-                                      shinyFilesButton("bamfiles3", "Sample files 3", multiple = TRUE,
+                                      shinyFilesButton("bamfiles3", "Sample 3, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths3'),br(),
                                       
-                                      shinyFilesButton("bamfiles4", "Sample files 4", multiple = TRUE,
+                                      shinyFilesButton("bamfiles4", "Sample 4, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths4'),br(),
                                       
-                                      shinyFilesButton("bamfiles5", "Sample files 5", multiple = TRUE,
+                                      shinyFilesButton("bamfiles5", "Sample 5, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths5'),br(),
                                       
-                                      shinyFilesButton("bamfiles6", "Sample files 6", multiple = TRUE,
+                                      shinyFilesButton("bamfiles6", "Sample 6, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default",class = NULL),
                                       verbatimTextOutput('filepaths6'),br(),
                                       
-                                      shinyFilesButton("bamfiles7", "Sample files 7", multiple = TRUE,
+                                      shinyFilesButton("bamfiles7", "Sample 7, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths7'),br(),
                                       
-                                      shinyFilesButton("bamfiles8", "Sample files 8", multiple = TRUE,
+                                      shinyFilesButton("bamfiles8", "Sample 8, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths8'),br(),
                                       
-                                      shinyFilesButton("bamfiles9", "Sample files 9", multiple = TRUE,
+                                      shinyFilesButton("bamfiles9", "Sample 9, bam file(s)", multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths9'),br(),
                                       
-                                      shinyFilesButton("bamfiles10", "Sample files 10" , multiple = TRUE,
+                                      shinyFilesButton("bamfiles10", "Sample 10, bam file(s)" , multiple = TRUE,
                                                        title = "Please select at least one bam file:",
                                                        buttonType = "default", class = NULL),
                                       verbatimTextOutput('filepaths10'),br(),
@@ -756,31 +756,6 @@ server <- shinyServer(function(input, output,session) {
       )
   })
   
-  # output$downloadTUAnno <- downloadHandler(
-  #   filename = function() { paste0('TU_filter_annotation_', Sys.Date(), ".gtf") },
-  #   
-  #   content = function(out_file) {
-  #     export.gff3(object = TU.gr, con = out_file)
-  #   }
-  # )
-  
-  # output$downloadTUAnnoFiles <- downloadHandler(
-  #   
-  #   filename = function() { paste0('TU_filter_annotation_', Sys.Date(), ".zip") },
-  #   
-  #   content = function(out_file) {
-  #     
-  #     owd <- setwd(tempdir())
-  #     on.exit(setwd(owd))
-  #     files <- NULL
-  #     for (i in seq_along(all.TU.expr.list)) {
-  #       file_name <- file.path(tempdir(), paste0('TU_filter_', sample.names[[i]], ".gff3"))
-  #       export.gff3(all.TU.expr.list[[i]], con = file_name)
-  #       files <- c(files, file_name)
-  #     }
-  #     zip(zipfile = "TU_anno", files = files)
-  #   }
-  # )
   
   output$downloadReport <- downloadHandler(
     
@@ -855,9 +830,9 @@ server <- shinyServer(function(input, output,session) {
   )
   
   # -------------------------------------------------------------------------------------#
-  #
+  #                                                                                      #  
   #                                     Functions                                        #
-  #
+  #                                                                                      #
   # -------------------------------------------------------------------------------------#
   
   ### part1 ---------------------------------------------------------------------
@@ -896,8 +871,8 @@ server <- shinyServer(function(input, output,session) {
     srg = lapply(srg[[1]],function(x) x=x[all.index])
     
     bam.chr.list = foreach(chr = chr.names) %dopar% {
-      chr.srg.plus = lapply(srg, function(x) x=x[with(srg, rname == chr & strand == '+')])
-      chr.srg.minus = lapply(srg, function(x) x=x[with(srg, rname == chr & strand == '-')])
+      chr.srg.plus = lapply(srg, function(x) x = x[with(srg, rname == chr & strand == '+')])
+      chr.srg.minus = lapply(srg, function(x) x = x[with(srg, rname == chr & strand == '-')])
       if (!outCoverage) {
         # Get mid.points
         if (paired.end) {
@@ -929,7 +904,7 @@ server <- shinyServer(function(input, output,session) {
         }
         binSum = function(chr.cov, binning) {
           bin = seq_len(chr.lengths[chr] %/% binning)*binning
-          if (chr.lengths[chr]%%binning == 0L) bin = c(bin, unname(chr.lengths[chr]))
+          if (chr.lengths[chr] %% binning == 0L) bin = c(bin, unname(chr.lengths[chr]))
           diff(c(0L, cumsum(as.numeric(chr.cov))[bin]))
         }
         freq.mat = cbind(binSum(cov.plus, binning),
@@ -937,7 +912,7 @@ server <- shinyServer(function(input, output,session) {
       }
       bam.name = strsplit(tail(unlist(strsplit(bam.file,'\\/')),1),'\\.bam') %>% 
         unlist() %>% head(1)
-      colnames(freq.mat) = c(paste(bam.name,"+"),paste(bam.name,"-"))
+      colnames(freq.mat) = c(paste(bam.name, "+"), paste(bam.name, "-"))
       return(freq.mat)
     }
     names(bam.chr.list) = chr.names
@@ -951,7 +926,7 @@ server <- shinyServer(function(input, output,session) {
     # bam.file: single file path
     # paired.end: reads single or paired end
     # Output strand split list of Rle coverage object
-    bam.index=paste0(bam.file,'.bai')
+    bam.index=paste0(bam.file, '.bai')
     if (!file.exists(bam.index)) bam.index = Rsamtools::indexBam(files = bam.file)
     
     if (paired.end) {
@@ -978,8 +953,8 @@ server <- shinyServer(function(input, output,session) {
     srg = lapply(srg[[1]],function(x) x=x[all.index])
     
     bam.chr.list = foreach(chr = chr.names) %dopar% {
-      chr.srg.plus = lapply(srg, function(x) x=x[with(srg, rname == chr & strand == '+')])
-      chr.srg.minus = lapply(srg, function(x) x=x[with(srg, rname == chr & strand == '-')])
+      chr.srg.plus = lapply(srg, function(x) x = x[with(srg, rname == chr & strand == '+')])
+      chr.srg.minus = lapply(srg, function(x) x = x[with(srg, rname == chr & strand == '-')])
       
       if (paired.end) {
         cov.rle = list(with(chr.srg.plus,
@@ -998,7 +973,7 @@ server <- shinyServer(function(input, output,session) {
       }
       
       bam.name = unlist(strsplit(tail(unlist(strsplit(bam.file,'\\/')),1), '\\.bam'))[[1]] 
-      names(cov.rle) = c(paste(bam.name,"+"), paste(bam.name,"-"))
+      names(cov.rle) = c(paste(bam.name, "+"), paste(bam.name, "-"))
       return(cov.rle)
     }
     names(bam.chr.list) = chr.names
@@ -1109,7 +1084,8 @@ server <- shinyServer(function(input, output,session) {
     for (i in seq_along(bam.files)) {
       bam.index = paste0(bam.files[i],'.bai')
       if (!file.exists(bam.index)) bam.index = Rsamtools::indexBam(files = bam.files[i])
-      invisible(capture.output(is.paired.end = testPairedEndBam(bam.files[i], index = bam.index)))
+      # invisible(capture.output(is.paired.end = testPairedEndBam(bam.files[i], index = bam.index)))
+      is.paired.end = testPairedEndBam(bam.files[i], index = bam.index)
       # scanBamWhat: the info that need to be extracted from a bam file.
       sbw = c('pos', 'qwidth', 'mapq', 'strand', 'rname',
               'mrnm', 'mpos', 'isize')
@@ -1198,8 +1174,11 @@ server <- shinyServer(function(input, output,session) {
   # Precise boundary----------------
   preciseBoundary <- function(object.gr, bam.files, k = 20, flank.size = 200, ...)
   {
-    cov.list = readCoverage(bam.files, object.gr=object.gr,
-                            targets = "full", flank.size=flank.size)
+    cov.list = readCoverage(bam.files, 
+                            object.gr = object.gr,
+                            targets = "full", 
+                            flank.size = flank.size)
+    
     object.gr = object.gr + flank.size
     
     foreach(n = seq_along(object.gr), .combine = c) %dopar% {
@@ -1207,13 +1186,12 @@ server <- shinyServer(function(input, output,session) {
       temp.gr = object.gr[n]
       firstDer = splinefun(x = 1:length(cov),
                            y = sqrt(as.numeric(cov)),
-                           method = 'natural'
-      )(1:length(cov), deriv = 1)
-      kLDev = NULL
-      for(i in 1:(2 * flank.size - k) )
+                           method = 'natural')(1:length(cov), deriv = 1)
+      kLDev = numeric(2 * flank.size - k)
+      for (i in 1:(2 * flank.size - k) )
         kLDev[i] = mean(firstDer[i:(i + k - 1)])
-      kRDev = NULL
-      for(i in (length(firstDer) - 2 * flank.size):(length(firstDer) - k + 1) )
+      kRDev = numeric(2 * flank.size - k + 2)
+      for (i in (length(firstDer) - 2 * flank.size):(length(firstDer) - k + 1) )
         kRDev[i] = mean(firstDer[i:(i + k - 1)])
       
       if (as.character(strand(temp.gr)) == '+') {
@@ -1225,7 +1203,6 @@ server <- shinyServer(function(input, output,session) {
       }
       return(temp.gr)
     }
-    
   }
   
   # TU merging----------------------
@@ -1257,7 +1234,7 @@ server <- shinyServer(function(input, output,session) {
     if (length(anno_matching_tus)>0) {
       sp = split(anno_matching_tus, anno_matching_tus$gene_id)
       message(paste(seqnames(tus)[1],': found minimum overlap', length(sp), 'of', length(anno),'genes'))
-      exon_matching_tus.merged = foreach(g = names(sp) , .combine="c") %dopar% {
+      exon_matching_tus.merged = foreach(g = names(sp), .combine="c") %dopar% {
         exons.gene_id = exons[exons$gene_id == g]
         
         tu_subset = sp[[g]]
@@ -1265,7 +1242,7 @@ server <- shinyServer(function(input, output,session) {
         
         ### extend upstream flank of first tu, in some cases the 1st TU starting sites are behind the end of 1st exons
         tu_subset_1flank = tu_subset
-        tu_1.Idx = ifelse(as.character(strand(tu_subset[1])) == '+',1,length(tu_subset))
+        tu_1.Idx = ifelse(as.character(strand(tu_subset[1])) == '+', 1, length(tu_subset))
         tu_subset_1flank[tu_1.Idx] = resize(tu_subset_1flank[tu_1.Idx],
                                             width = width(tu_subset_1flank[tu_1.Idx])+500,
                                             fix = 'end')
@@ -1276,7 +1253,7 @@ server <- shinyServer(function(input, output,session) {
         tu_subset$exonOV[queryHits(mtch)] = TRUE
         
         true.inds = which(tu_subset$exonOV == TRUE)
-        if (length(true.inds) >=1) {  ###if(length(true.inds) >= 1){ ### incase only one TU has exon overlap so all the others are unmerged, still marked as ncRNA
+        if (length(true.inds) >= 1) {  ###if(length(true.inds) >= 1){ ### incase only one TU has exon overlap so all the others are unmerged, still marked as ncRNA
           min.true.ind = min(true.inds)
           max.true.ind = max(true.inds)
           
@@ -1342,7 +1319,7 @@ server <- shinyServer(function(input, output,session) {
                                                       ignore.strand = FALSE) %>%
                                            countSubjectHits() == 0]
     
-    if (length(anno_matching_tus)>0){
+    if (length(anno_matching_tus) > 0){
       sp = split(anno_matching_tus, anno_matching_tus$gene_id)
       message(paste(seqnames(tus)[1],': found minimum overlap', length(sp), 'of', length(anno),'genes'))
       
@@ -1358,10 +1335,10 @@ server <- shinyServer(function(input, output,session) {
         tu_subset.boundary = tu_subset[1];start(tu_subset.boundary) = min(start(tu_subset))
         end(tu_subset.boundary) = max(end(tu_subset))#maximum exon overlapped width
         tu_subset_1flank = tu_subset
-        tu_1.Idx = ifelse(as.character(strand(tu_subset[1])) == '+',1,length(tu_subset))
+        tu_1.Idx = ifelse(as.character(strand(tu_subset[1])) == '+', 1, length(tu_subset))
         tu_subset_1flank[tu_1.Idx] = tu_subset_1flank[tu_1.Idx]+1000
         
-        mtch = findOverlaps(tu_subset_1flank, exons.gene_id,type = 'any', ignore.strand = FALSE)
+        mtch = findOverlaps(tu_subset_1flank, exons.gene_id, type = 'any', ignore.strand = FALSE)
         tu_subset$exonOV[queryHits(mtch)] = TRUE
         
         true.inds = which(tu_subset$exonOV == TRUE)
@@ -1372,18 +1349,17 @@ server <- shinyServer(function(input, output,session) {
           end(tu_return_subset_merged) = end(tu_subset[max.true.ind])
           ### get the maximum exon range, and cut excessive tu outside of exon boundary
           ### return the transcript with maximum TU overlap
-          if (length(transcripts.gene_id)>1){
-            # exon.boundary=transcripts.gene_id[which.min(abs(start(transcripts.gene_id)-start(tu_return_subset_merged))+abs(end(transcripts.gene_id)-end(tu_return_subset_merged)))]
-            tx.idx = which.min( abs(start(transcripts.gene_id)-start(tu_subset.boundary)) + abs(end(transcripts.gene_id)-end(tu_subset.boundary)) )
+          if (length(transcripts.gene_id) > 1){
+            tx.idx = which.min(abs(start(transcripts.gene_id) - start(tu_subset.boundary)) + abs(end(transcripts.gene_id)-end(tu_subset.boundary)) )
             exon.boundary = transcripts.gene_id[ tx.idx ]# unmerged tu closest to exon-overlapped tu boundary
-          } else{
+          } else {
             exon.boundary = transcripts.gene_id
           }
           tu_subset$transcript_id = NA
           tu_subset[which.min(start(tu_subset))]$transcript_id = as.character(exon.boundary$transcript_id)[1]
           mcols(exon.boundary) = mcols(tu_subset[which.min(start(tu_subset))])
           reduced.exon.boundary = IRanges::reduce(c(tu_return_subset_merged, exon.boundary))
-          excessive.tu=GRanges()
+          excessive.tu = GRanges()
           ### get nc excessive part
           # disjoin exon with reduced tu
           disjoin.exon.tu = disjoin(c(reduced.exon.boundary, exon.boundary))
@@ -1392,11 +1368,11 @@ server <- shinyServer(function(input, output,session) {
           excessive.tu = excessive.tu[width(excessive.tu) > binning] # discard flanking nc tu smaller than bin size, usually they are artifacts
           ### add metadata
           exon.boundary$gene_id = g
-          exon.boundary$type = ifelse(as.character(exons.gene_id$gene_type)[1] == 'protein_coding','protein_coding','ncRNA')
+          exon.boundary$type = ifelse(as.character(exons.gene_id$gene_type)[1] == 'protein_coding', 'protein_coding', 'ncRNA')
           exon.boundary$gene_type = as.character(exons.gene_id$gene_type)[1]
           exon.boundary$exonOV = TRUE
           
-          if(length(excessive.tu)>0) {
+          if (length(excessive.tu) > 0) {
             mcols(excessive.tu) = mcols(tu_subset[which.min(start(tu_subset))])### this will be removed later step, doesn't matter to randomly attribute
             excessive.tu$gene_id = g
             excessive.tu$transcript_id = NA
@@ -1406,7 +1382,7 @@ server <- shinyServer(function(input, output,session) {
           }
           
           tu_return_subset = c(exon.boundary, excessive.tu)# tu_return_subset_unmerged)
-        }else{
+        } else {
           tu_return_subset = tu_subset[which.min(start(tu_subset))] ### some TUs don't overlap with exon and only in intron, need to be merged into one
           end(tu_return_subset) = end(tu_subset[which.max(end(tu_subset))])
           
@@ -1430,7 +1406,7 @@ server <- shinyServer(function(input, output,session) {
         ### add matadata
         mid.nc.tu = intersect.nc.tu[internal.nc.idx]
         mid.nc.tu = mid.nc.tu[width(mid.nc.tu)>binning] #### discard middle nc tu if they are too small
-        if (length(mid.nc.tu)>0)
+        if (length(mid.nc.tu) > 0)
         {
           mid.matches = findOverlaps(mid.nc.tu, tus,ignore.strand = FALSE, type = "within")
           mcols(mid.nc.tu) = suppressWarnings(mcols(tus[subjectHits(mid.matches)]))
@@ -1498,9 +1474,9 @@ server <- shinyServer(function(input, output,session) {
     within.antisense = findOverlaps(ncRNAs_antisense, main.genes.gr, 
                                     type = 'any', ignore.strand = FALSE) ###add type = 'any'
     
-    if (length(queryHits(within.antisense))>0) 
+    if (length(queryHits(within.antisense)) > 0) 
       ncRNAs.gr$location[unique(queryHits(within.antisense))] = "antisense"
-    if (length(queryHits(within.sense))>0) 
+    if (length(queryHits(within.sense)) > 0) 
       ncRNAs.gr$location[unique(queryHits(within.sense))] = "gene_sense"
     if (TRUE)
     {
@@ -1831,14 +1807,12 @@ server <- shinyServer(function(input, output,session) {
       
       max.gene.TU.id = foreach(x = seq_along(dup.ranges), .combine = c) %dopar% {
         temp.gene = current.ref[countSubjectHits(findOverlaps(query = dup.ranges[x], subject = current.ref)) > 0]
-        # temp.TU=current.TU.gr[ranges(current.TU.gr) == ranges(dup.ranges[x])]
         intct_width = width(intersect(temp.gene, dup.ranges[x]))
         if (all(intct_width == intct_width[1])) {
           temp.gene[which.max(intct_width / width(temp.gene))]$gene_id
         } else {
           temp.gene[which.max(intct_width)]$gene_id
         }
-        # temp.gene[which.max(width(dup.ranges[x])/width(temp.gene))]$gene_id### change: return the largest overlap
       }
       dedup.TU.gr = all.dup.ranges[all.dup.ranges$gene_id %in% max.gene.TU.id]
       dedup.TU.gr = dedup.TU.gr[!duplicated(ranges(dedup.TU.gr))]
@@ -1948,7 +1922,7 @@ server <- shinyServer(function(input, output,session) {
       sp.ncRNA.reduce.ls = split(ncRNAs.gr[subjectHits(ncRNAs.reduce.gap.Idx)], 
                                  queryHits(ncRNAs.reduce.gap.Idx))
       ncRNA.reduce.gr = GRanges()
-      ncRNA.reduce.gr = foreach(i=1:length(sp.ncRNA.reduce.ls),.combine = c) %dopar% {
+      ncRNA.reduce.gr = foreach(i=1:length(sp.ncRNA.reduce.ls), .combine = c) %dopar% {
         temp.reduce.gr = sp.ncRNA.reduce.ls[[i]]
         return.reduce.gr = temp.reduce.gr[1]
         start(return.reduce.gr) = min(start(temp.reduce.gr))
