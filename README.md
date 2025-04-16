@@ -1,5 +1,15 @@
 Welcome to this R shiny app!
 
+
+---
+
+Update (2025 Apr 16)
+
+Installation of genoSTAN 2.24.0 on Ubuntu please use 'STAN.tar.gz': 
+```
+install.packages("YOUR_DOWNLOAD_PATH/STAN.tar.gz", repo = NULL, type = "source")
+```
+
 ---
 
 Update (2024 Jan 31)
